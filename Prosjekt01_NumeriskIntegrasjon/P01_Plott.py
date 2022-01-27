@@ -20,10 +20,10 @@ except Exception as e:
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     A) online and offline: SET ONLINE FLAG, IP-ADRESSE OG FILENAME
 #
-online = True
+online = False
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.205.100"
+EV3_IP = "169.254.204.78"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -240,7 +240,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # Siden motor(er) ikke brukes offline, så sendes IKKE 
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
-            
+            print(Volum, Flow, Ts, Lys, Tid)
             MathCalculations(Tid, Lys, Ts, Flow)
             EulerForward(Volum, Flow, Ts)
             #---------------------------------------------------------

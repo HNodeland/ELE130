@@ -1,0 +1,2 @@
+Tallformatet viser til kolonnenummer:
+0= 

@@ -36,7 +36,7 @@ import sys
 #            1) EXPERIMENT SETUP AND FILENAME
 #
 # Skal prosjektet gjennomføres med eller uten USB-ledning?
-wired = True
+wired = False
 
 # --> Filnavn for lagring av MÅLINGER som gjøres online
 filenameMeas = "Meas_P01_NumeriskIntegrasjon_01.txt"
@@ -231,11 +231,14 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0= \n"
+                    CalculationsToFileHeader += "0=Ts, 1=Flow, 2=Volum\n"
 
 
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
+                CalculationsToFile += str(Ts[-1]) + ","
+                CalculationsToFile += str(Flow[-1]) + ","
+                CalculationsToFile += str(Volum[-1]) + ",\n"
              
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -345,10 +348,7 @@ def MathCalculations(Tid, Lys, Ts, Flow):
         
         Ts.append(0)
         Flow.append(0)
-        
-        
-        
-        
+    
     else:
         Ts.append(Tid[-1] - Tid[-2])
         Flow.append(Lys[-1] - Nullflow)
@@ -365,9 +365,9 @@ def MathCalculations(Tid, Lys, Ts, Flow):
 
 
 def EulerForward(Volum, Flow, Ts):
-    if len(Volum) == 1:
+    if len(Volum) == 0:
         Volum.append(0)
-
+        
     else:
         Volum.append(Volum[-1] + Ts[-1]*Flow[-1])
 
