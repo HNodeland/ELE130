@@ -1,0 +1,3 @@
+Tall viser til kolonnenummer:
+0=Tid, 1=Lys
+0,20
