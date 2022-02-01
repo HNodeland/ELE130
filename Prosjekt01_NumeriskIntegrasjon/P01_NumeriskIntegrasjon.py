@@ -231,7 +231,7 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0=Ts, 1=Flow, 2=Volum\n"
+                    CalculationsToFileHeader += "0=Ts, 1=Flow, 2=Volum, \n"
 
 
                     robot["calculations"].write(CalculationsToFileHeader)

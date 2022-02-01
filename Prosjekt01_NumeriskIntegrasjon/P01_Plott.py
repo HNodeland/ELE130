@@ -240,7 +240,6 @@ def offline(filenameMeas, filenameCalcOffline):
             # Siden motor(er) ikke brukes offline, så sendes IKKE 
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
-            print(Volum, Flow, Ts, Lys, Tid)
             MathCalculations(Tid, Lys, Ts, Flow)
             EulerForward(Volum, Flow, Ts)
             #---------------------------------------------------------
@@ -265,16 +264,18 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0= \n"
+                CalculatedToFileHeader += "0=Ts, 1=Flow, \n"
+                CalculatedToFileHeader += "2=Volum \n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                   
+                    CalculatedToFile += str(Ts[i]) + ","
+                    CalculatedToFile += str(Flow[i]) + ","
+                    CalculatedToFile += str(Volum[i]) + "\n"
                     f.write(CalculatedToFile)
-        #---------------------------------------------------------
 
     # Plot data (målinger og beregnede verdier) fra listene.
     figureTitles()
