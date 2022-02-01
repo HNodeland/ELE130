@@ -36,7 +36,7 @@ import sys
 #            1) EXPERIMENT SETUP AND FILENAME
 #
 # Skal prosjektet gjennomføres med eller uten USB-ledning?
-wired = False
+wired = True
 
 # --> Filnavn for lagring av MÅLINGER som gjøres online
 filenameMeas = "Meas_P01_NumeriskIntegrasjon_01.txt"
@@ -288,7 +288,7 @@ def main():
             #            10) STOP EXPERIMENT AND INCREASE k
             # 
             # Hvis du får socket timeouts, fjern kommentar foran sleep(1)
-            # sleep(1)
+            #sleep(1)
 
             # Hvis skyteknappen trykkes inn så skal programmet avsluttes
             if config.joyMainSwitch:

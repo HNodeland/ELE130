@@ -20,17 +20,17 @@ except Exception as e:
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     A) online and offline: SET ONLINE FLAG, IP-ADRESSE OG FILENAME
 #
-online = False
+online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.204.78"
+EV3_IP = "169.254.81.172"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "Meas_P01_NumeriskIntegrasjon_01.txt"
+filenameMeas = "Meas_P01_NumeriskIntegrasjon_sinus_02.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -264,8 +264,8 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0=Ts, 1=Flow, \n"
-                CalculatedToFileHeader += "2=Volum \n"
+                CalculatedToFileHeader += "0=Ts, 1=Flow, 2=Volum \n"
+                CalculatedToFileHeader += "\n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
