@@ -20,7 +20,7 @@ except Exception as e:
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     A) online and offline: SET ONLINE FLAG, IP-ADRESSE OG FILENAME
 #
-online = True
+online = False
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
 EV3_IP = "169.254.81.172"
@@ -55,7 +55,8 @@ if not online:
     # i hovedfilen. 
     
     Tid = []                # registring av tidspunkt for målinger
-    Lys = []                # måling av reflektert lys fra ColorSensor
+    Lys = []                # måling av reflektert lys fra ColorSensor'
+    
    
     
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
@@ -80,7 +81,8 @@ if not online:
     Ts = []
     Flow = []
     Volum = []
-
+    sinGraf = [0]
+    sinIntGraf = [0]
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
     #---------------------------------------------------------------------
@@ -160,6 +162,8 @@ def unpackData(rowOfData):
     Ts.append(rowOfData["Ts"])
     Flow.append(rowOfData["Flow"])
     Volum.append(rowOfData["Volum"])
+    sinGraf.append(rowOfData["sinGraf"])
+    sinIntGraf.append(rowOfData["sinIntGraf"])
 
 
 #-------------------------------------------------------------
@@ -174,20 +178,27 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True)
+fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
-    ax[0].set_title('Flow')
-    ax[1].set_title('Volum')
+    ax[0,0].set_title('Flow')
+    ax[0,1].set_title('Volum')
+
+    ax[1,0].set_title('sinGraf')
+    ax[1,1].set_title('sinIntGraf')
+
+
 
     
     
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
-    ax[1].set_xlabel('Tid [sec]')
+    ax[1,0].set_xlabel('Tid [sec]')
+    ax[1,1].set_xlabel('Tid [sec]')
+    
     
     
 
@@ -196,8 +207,11 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
     
-    ax[0].plot(Tid[0:], Flow[0:], 'b')
-    ax[1].plot(Tid[0:], Volum[0:], 'b')
+    ax[0,0].plot(Tid[0:], Flow[0:], 'b')
+    ax[0,1].plot(Tid[0:], Volum[0:], 'b')
+
+    ax[1,0].plot(Tid[0:], sinGraf[0:], 'b')
+    ax[1,1].plot(Tid[0:], sinIntGraf[0:], 'b')
    
 #---------------------------------------------------------------------
 
