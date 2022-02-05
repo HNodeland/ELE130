@@ -23,20 +23,20 @@ except Exception as e:
 online = False
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.81.172"
+EV3_IP = "169.254.205.100"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "Meas_P01_NumeriskIntegrasjon_sinus_02.txt"
+filenameMeas = "Meas_P01_NumeriskIntegrasjon_sinus_02_cropped.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOffline = ".txt"
-filenameCalcOffline = "CalcOffline_P01_NumeriskIntegrasjon_01.txt"
+filenameCalcOffline = "CalcOffline_P01_NumeriskIntegrasjon_01_sinus_02.txt"
 #---------------------------------------------------------------------
 
 
@@ -55,8 +55,7 @@ if not online:
     # i hovedfilen. 
     
     Tid = []                # registring av tidspunkt for målinger
-    Lys = []                # måling av reflektert lys fra ColorSensor'
-    
+    Lys = []                # måling av reflektert lys fra ColorSensor
    
     
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
@@ -78,11 +77,12 @@ if not online:
     # EGNE VARIABLE her i denne seksjonen når du kjører prosjektet
     # offline.
 
-    Ts = []
-    Flow = []
-    Volum = []
+    TimeStep = [0]
+    FunctionValue = [0]
+    IntValueOld = [0]
     sinGraf = [0]
     sinIntGraf = [0]
+    sumTimeStep = [0]
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
     #---------------------------------------------------------------------
@@ -111,9 +111,12 @@ else:
   
     
     # egne variable
-    Ts = []
-    Flow = []
-    Volum = []
+    TimeStep = []
+    FunctionValue = []
+    IntValueOld = []
+    sinGraf = []
+    sinIntGraf = []
+    sumTimeStep = []
    
     
     print("D) online: LISTS FOR DATA TO PLOT INITIALIZED.")
@@ -159,9 +162,9 @@ def unpackData(rowOfData):
     Lys.append(rowOfData["Lys"])
 
     # egne variable
-    Ts.append(rowOfData["Ts"])
-    Flow.append(rowOfData["Flow"])
-    Volum.append(rowOfData["Volum"])
+    TimeStep.append(rowOfData["TimeStep"])
+    FunctionValue.append(rowOfData["FunctionValue"])
+    IntValueOld.append(rowOfData["IntValueOld"])
     sinGraf.append(rowOfData["sinGraf"])
     sinIntGraf.append(rowOfData["sinIntGraf"])
 
@@ -186,18 +189,16 @@ def figureTitles():
     global ax
     ax[0,0].set_title('Flow')
     ax[0,1].set_title('Volum')
-
-    ax[1,0].set_title('sinGraf')
-    ax[1,1].set_title('sinIntGraf')
-
-
+    ax[1,0].set_title('sin(x)')
+    ax[1,1].set_title('-cos(x) + 1')
 
     
     
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
-    ax[1,0].set_xlabel('Tid [sec]')
     ax[1,1].set_xlabel('Tid [sec]')
+    
+    ax[1,0].set_xlabel('Tid [sec]')
     
     
     
@@ -207,11 +208,10 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
     
-    ax[0,0].plot(Tid[0:], Flow[0:], 'b')
-    ax[0,1].plot(Tid[0:], Volum[0:], 'b')
-
-    ax[1,0].plot(Tid[0:], sinGraf[0:], 'b')
-    ax[1,1].plot(Tid[0:], sinIntGraf[0:], 'b')
+    ax[0,0].plot(Tid[0:], FunctionValue[0:-1], 'b')
+    ax[0,1].plot(Tid[0:], IntValueOld[0:-1], 'b')
+    ax[1,0].plot(Tid[0:], sinGraf[0:-1], 'b')
+    ax[1,1].plot(Tid[0:], sinIntGraf[0:-1], 'b')
    
 #---------------------------------------------------------------------
 
@@ -254,8 +254,9 @@ def offline(filenameMeas, filenameCalcOffline):
             # Siden motor(er) ikke brukes offline, så sendes IKKE 
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
-            MathCalculations(Tid, Lys, Ts, Flow)
-            EulerForward(Volum, Flow, Ts)
+            
+            MathCalculations(Tid, Lys, TimeStep, FunctionValue, sinGraf, sinIntGraf, sumTimeStep)
+            EulerForward(IntValueOld, FunctionValue, TimeStep)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
@@ -278,18 +279,16 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0=Ts, 1=Flow, 2=Volum \n"
-                CalculatedToFileHeader += "\n"
+                CalculatedToFileHeader += "0= \n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                    CalculatedToFile += str(Ts[i]) + ","
-                    CalculatedToFile += str(Flow[i]) + ","
-                    CalculatedToFile += str(Volum[i]) + "\n"
+                   
                     f.write(CalculatedToFile)
+        #---------------------------------------------------------
 
     # Plot data (målinger og beregnede verdier) fra listene.
     figureTitles()

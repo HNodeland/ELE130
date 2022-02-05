@@ -16,7 +16,7 @@
 # - ...
 #
 # ---------------------------------------------------------------------
-
+import math
 try:
     from pybricks.hubs import EV3Brick
     from pybricks.parameters import Port
@@ -80,7 +80,7 @@ def main():
 
 
         # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        #               3) MEASUREMENTS. INITIALIZE LISTS
+        #               3) MEASUREMENTimeStep. INITIALIZE LISTimeStep
         # 
         # Denne seksjonen inneholder alle tilgjengelige målinger
         # fra EV3 og styrestikke, i tillegg til tid. Du skal velge 
@@ -91,20 +91,20 @@ def main():
         # Listene med målinger fylles opp i seksjon 
         #  --> 5) GET TIME AND MEASUREMENT
         # og lagres til .txt-filen i seksjon 
-        #  --> 6) STORE MEASUREMENTS TO FILE
+        #  --> 6) STORE MEASUREMENTimeStep TO FILE
 
         Tid = []                # registring av tidspunkt for målinger
         Lys = []                # måling av reflektert lys fra ColorSensor
         
     
 
-        print("3) MEASUREMENTS. LISTS INITIALIZED.")
+        print("3) MEASUREMENTimeStep. LISTimeStep INITIALIZED.")
         # ------------------------------------------------------------
 
 
 
         # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        #         4) optional: OWN VARIABLES. INITIALIZE LISTS
+        #         4) optional: OWN VARIABLES. INITIALIZE LISTimeStep
         #
         # Denne seksjonen definerer lister med EGNE VARIABLE som 
         # skal beregnes. Tenk nøye gjennom hvilke lister som skal 
@@ -120,14 +120,17 @@ def main():
         # ønsker å lagre målinger, så trenger du ikke bruke denne
         # seksjonen. Dette fordi du alternativt kan spesifisere 
         # EGEN VARIABLE offline i seksjonen 
-        #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
+        #  --> C) offline: OWN VARIABLES. INITIALIZE LISTimeStep
         # i plottefilen. 
-        Ts = [0]                     #Tidsskritt
-        Flow = [0]                   #Lysmåling minus den første lysmålingen
-        Volum = [0]
-       
+        TimeStep = []                     #Tidsskritt
+        FunctionValue = []                   #Lysmåling minus den første lysmålingen
+        IntValueOld = []
 
-        print("4) OWN VARIABLES. LISTS INITIALIZED.")
+        sinGraf = []
+        sinIntGraf = []
+        sumTimeStep = []
+
+        print("4) OWN VARIABLES. LISTimeStep INITIALIZED.")
         # ------------------------------------------------------------
 
         # indeks som øker for hver runde
@@ -142,7 +145,7 @@ def main():
             # I denne seksjonen registres måletidspunkt og målinger 
             # fra sensorer, motorer og styrestikke, og disse legges 
             # inn i listene definert i seksjon
-            #  -->  3) MEASUREMENTS. INITIALIZE LISTS
+            #  -->  3) MEASUREMENTimeStep. INITIALIZE LISTimeStep
 
             if k==0:        
                 # Definer starttidspunkt for eksperimentet
@@ -159,19 +162,19 @@ def main():
 
 
             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            #            6) STORE MEASUREMENTS TO FILE
+            #            6) STORE MEASUREMENTimeStep TO FILE
             #
             # I denne seksjonen lagres MÅLINGENE til .txt-filen. 
             #
             # For å holde orden i koden bør du benytte samme 
             # struktur/rekkefølge i seksjonen
-            #   --> 3) MEASUREMENTS. INITIALIZE LISTS
+            #   --> 3) MEASUREMENTimeStep. INITIALIZE LISTimeStep
             #   --> 5) GET TIME AND MEASUREMENT 
-            #   --> 6) STORE MEASUREMENTS TO FILE 
+            #   --> 6) STORE MEASUREMENTimeStep TO FILE 
             # 
             # I plottefilen må du passe på at seksjonene
-            #  --> B) offline: MEASUREMENTS. INTITALIZE LISTS ACCORDING to 6)
-            #  --> E) offline: UNPACK MEASUREMENTS FROM FILE ACCORDING TO 6)
+            #  --> B) offline: MEASUREMENTimeStep. INTITALIZE LISTimeStep ACCORDING to 6)
+            #  --> E) offline: UNPACK MEASUREMENTimeStep FROM FILE ACCORDING TO 6)
             # har lik struktur som her i seksjon 6)
             
             # Legger først inn 4 linjer som header i filen med målinger.            
@@ -179,7 +182,7 @@ def main():
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
                 MeasurementToFileHeader += "0=Tid, 1=Lys\n"
-                robot["measurements"].write(MeasurementToFileHeader)
+                robot["measuremenTimeStep"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
@@ -187,7 +190,7 @@ def main():
            
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
-            robot["measurements"].write(MeasurementToFile)
+            robot["measuremenTimeStep"].write(MeasurementToFile)
             #--------------------------------------------------------
 
 
@@ -195,16 +198,18 @@ def main():
             #    7) optional: PERFORM CALCULATIONS AND SET MOTOR POWER
             # 
             # På samme måte som i seksjon
-            #  -->  4) optional: OWN VARIABLES. INITIALIZE LISTS
+            #  -->  4) optional: OWN VARIABLES. INITIALIZE LISTimeStep
             # så er bruken av seksjon 7) avhengig av hvordan 
             # prosjektet gjennomføres. Dersom seksjon 4) ikke benyttes 
             # så kan heller ikke seksjon 7) benyttes. Du må i så 
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Tid, Lys, Ts, Flow)
+            MathCalculations(Tid, Lys, TimeStep, FunctionValue, sinGraf, sinIntGraf, sumTimeStep)
 
-            EulerForward(Volum, Flow, Ts)
+            EulerForward(IntValueOld, FunctionValue, TimeStep)
+
+           
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -216,7 +221,7 @@ def main():
             #        8) optional: STORE CALCULATIONS FROM 6) TO FILE
             #
             # På samme måte som i seksjonene
-            #  --> 4) optional: OWN VARIABLES. INITIALIZE LISTS
+            #  --> 4) optional: OWN VARIABLES. INITIALIZE LISTimeStep
             #  --> 7) optional: PERFORM CALCULATIONS AND SET MOTOR POWER
             # så er bruken av seksjon 8) avhengig av hvordan prosjektet 
             # gjennomføres. Dersom seksjonene 4) og 7) ikke benyttes
@@ -231,14 +236,11 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0=Ts, 1=Flow, 2=Volum, \n"
+                    CalculationsToFileHeader += "0= \n"
 
 
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
-                CalculationsToFile += str(Ts[-1]) + ","
-                CalculationsToFile += str(Flow[-1]) + ","
-                CalculationsToFile += str(Volum[-1]) + ",\n"
              
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -260,7 +262,7 @@ def main():
             # slik de er definert i seksjonene 3) og 4). 
             # 
             # I plottefilen må du passe på at seksjonene
-            #  --> D) online: DATA TO PLOT. INITIALIZE LISTS ACCORDING TO 9)
+            #  --> D) online: DATA TO PLOT. INITIALIZE LISTimeStep ACCORDING TO 9)
             #  --> F) online: RECEIVE DATA TO PLOT ACCORDING TO 9) 
             # har lik struktur som her i seksjon 9)
 
@@ -274,9 +276,9 @@ def main():
                 
 
                 # egne variable
-                DataToOnlinePlot["Ts"] = (Ts[-1])
-                DataToOnlinePlot["Flow"] = (Flow[-1])
-                DataToOnlinePlot["Volum"] = (Volum[-1])
+                DataToOnlinePlot["TimeStep"] = (TimeStep[-1])
+                DataToOnlinePlot["FunctionValue"] = (FunctionValue[-1])
+                DataToOnlinePlot["IntValueOld"] = (IntValueOld[-1])
 
                 # sender over data
                 msg = json.dumps(DataToOnlinePlot)
@@ -287,8 +289,8 @@ def main():
             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             #            10) STOP EXPERIMENT AND INCREASE k
             # 
-            # Hvis du får socket timeouts, fjern kommentar foran sleep(1)
-            #sleep(1)
+            # Hvis du får socket timeouTimeStep, fjern kommentar foran sleep(1)
+            # sleep(1)
 
             # Hvis skyteknappen trykkes inn så skal programmet avsluttes
             if config.joyMainSwitch:
@@ -338,38 +340,48 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Tid, Lys, Ts, Flow):
-
-    # Parametre
+def MathCalculations(Tid, Lys, TimeStep, FunctionValue, sinGraf, sinIntGraf, sumTimeStep):
     
+    
+    # Parametre
+    sin_t = float(math.sin(sumTimeStep[-1]))
+    cos_t = float(math.cos(sumTimeStep[-1]))
     # Initialverdibereging
     Nullflow = Lys[0]
     if len(Tid) == 1:
         
-        Ts.append(0)
-        Flow.append(0)
+        TimeStep.append(0)
+        sumTimeStep.append(sumTimeStep[-1]+TimeStep[-1])
+        FunctionValue.append(0) 
+        sinGraf.append(0)
+        sinIntGraf.append(0)
     
     else:
-        Ts.append(Tid[-1] - Tid[-2])
-        Flow.append(Lys[-1] - Nullflow)
+        TimeStep.append(Tid[-1] - Tid[-2])
+        sumTimeStep.append(sumTimeStep[-1] + TimeStep[-1])
+        FunctionValue.append(Lys[-1] - Nullflow)
+        sinGraf.append(sin_t)
+        sinIntGraf.append(-cos_t+1)
 
+        #sinIntGraf.append(12.4*-cos_t*71.5)
 
     
     # Matematiske beregninger 
+
+        
     
     # Pådragsberegning
 
 #---------------------------------------------------------------------
 
+def EulerForward(IntValueOld, FunctionValue, TimeStep):
+    if len(IntValueOld) == 1:
+        IntValueOld.append(0)
 
-
-
-def EulerForward(Volum, Flow, Ts):
-    if len(Volum) == 0:
-        Volum.append(0)
-        
     else:
-        Volum.append(Volum[-1] + Ts[-1]*Flow[-1])
+        IntValueOld.append(IntValueOld[-1] + TimeStep[-1]*FunctionValue[-1])
+        
+        IntValueNew = IntValueOld[-1]
 
 
 
