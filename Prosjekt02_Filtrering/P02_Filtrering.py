@@ -15,8 +15,7 @@
 # - motor A
 # - ...
 #
-# ---------------------------------------------------------------------
-import math
+# --------------------------------------------------------------------- 
 try:
     from pybricks.hubs import EV3Brick
     from pybricks.parameters import Port
@@ -181,7 +180,7 @@ def main():
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
                 MeasurementToFileHeader += "0=Tid, 1=Temp\n"
-                robot["measuremenTimeStep"].write(MeasurementToFileHeader)
+                robot["measurements"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
@@ -189,7 +188,7 @@ def main():
            
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
-            robot["measuremenTimeStep"].write(MeasurementToFile)
+            robot["measurements"].write(MeasurementToFile)
             #--------------------------------------------------------
 
 
@@ -343,7 +342,7 @@ def MathCalculations(Tid, Temp, Temp_fir,m_verdi):
     
     # Parametre
     
-    
+    m_verdi = 10 
     if len(Tid) == 0:
         Temp.append(0)
         Temp_fir.append(0)
@@ -352,7 +351,10 @@ def MathCalculations(Tid, Temp, Temp_fir,m_verdi):
 
         sumTemp = 0
         for i in range(m_verdi):
-            sumTemp += Temp[-(i+1)]
+            if len(Tid) < m_verdi:
+                m_verdi = len(Tid)
+            else:
+                sumTemp += Temp[-(i+1)]
 
         Temp_fir.append((1/m_verdi) * sumTemp)
         

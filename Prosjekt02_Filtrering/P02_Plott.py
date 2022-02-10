@@ -23,7 +23,7 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.225.86"
+EV3_IP = "169.254.105.155"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -172,7 +172,7 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True)
+fig, ax = plt.subplots(nrows=1, ncols=2, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
