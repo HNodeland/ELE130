@@ -1,0 +1,15 @@
+Measurments:
+P02_meas_<PROSJEKTNAVN>_01       (P02_meas_iir_01)
+
+P02_meas_01_v2                   <---  hvis man endrer en meas fil, skal den lagres og gis nytt navn
+
+
+Images:
+P02_figure_01
+P02_figure_01_02
+
+
+Calculations:
+
+P02_calcOffline_01
+P02_calcOnline_01_02
