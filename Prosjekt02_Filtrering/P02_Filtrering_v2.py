@@ -341,7 +341,7 @@ def MathCalculations(Tid, Temp, Temp_fir,m_verdi):
     m_verdi = 10 
     if len(Tid) == 0:
         Temp.append(0)
-        Temp_fir.append(0)
+        Temp_fir.append(Temp[0])
 
     else:
 
