@@ -23,7 +23,7 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.105.155"
+EV3_IP = "169.254.116.194"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -198,8 +198,8 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
     
-    ax[0].plot(Tid[0:], Temp[0:-1], 'b')
-    ax[1].plot(Tid[0:], Temp_fir[0:-1], 'b')
+    ax[0].plot(Tid[0:], Temp[0:], 'b')
+    ax[1].plot(Tid[0:], Temp_fir[0:], 'b')
  
    
 #---------------------------------------------------------------------

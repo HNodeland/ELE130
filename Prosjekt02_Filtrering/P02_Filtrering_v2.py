@@ -123,7 +123,7 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        m_verdi = 10
+        m_verdi = 150
         Temp_fir = []             # tidsskritt
         
 
@@ -185,7 +185,7 @@ def main():
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Lys[-1]) + ","
+            MeasurementToFile += str(Temp[-1]) + ","
             
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
@@ -271,7 +271,7 @@ def main():
                 
 
                 # egne variable
-                DataToOnlinePlot["Ts"] = (Temp_fir[-1])
+                DataToOnlinePlot["Temp_fir"] = (Temp_fir[-1])
                
 
                 # sender over data
@@ -338,19 +338,19 @@ def MathCalculations(Tid, Temp, Temp_fir,m_verdi):
     
     # Parametre
     
-    m_verdi = 10 
+    
+    
     if len(Tid) == 0:
         Temp.append(0)
         Temp_fir.append(Temp[0])
 
     else:
-
         sumTemp = 0
-        for i in range(m_verdi):
-            if len(Tid) < m_verdi:
-                m_verdi = len(Tid)
-            else:
-                sumTemp += Temp[-(i+1)]
+        
+        if len(Tid) < m_verdi:
+            m_verdi = len(Tid)
+        
+        sumTemp = sum(Temp[-m_verdi:])
 
         Temp_fir.append((1/m_verdi) * sumTemp)
         
