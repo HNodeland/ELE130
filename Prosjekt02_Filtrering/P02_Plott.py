@@ -23,7 +23,7 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.116.194"
+EV3_IP = "169.254.42.204"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -78,7 +78,8 @@ if not online:
     # offline.
 
     Temp_fir = []
-    m_verdi = 10
+    m_verdi = 0
+    alfa_verdi = 0
     
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
@@ -110,6 +111,7 @@ else:
     # egne variable
     Temp_fir = []
     m_verdi = 10
+    Temp_iir = []
     
    
     
@@ -157,6 +159,7 @@ def unpackData(rowOfData):
 
     # egne variable
     Temp_fir.append(rowOfData["Temp_fir"])
+    Temp_iir.append(rowOfData["Temp_iir"])
 
     
 
@@ -172,7 +175,7 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=1, ncols=2, sharex=True)
+fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
@@ -180,6 +183,8 @@ def figureTitles():
     global ax
     ax[0].set_title('Temp')
     ax[1].set_title('Temp_fir')
+    ax[2].set_title('Temp_iir')
+
     
 
     
@@ -189,6 +194,8 @@ def figureTitles():
     ax[1].set_xlabel('Tid [sec]')
     
     ax[0].set_xlabel('Tid [sec]')
+
+    ax[2].set_xlabel('Tid [sec]')
     
     
     
@@ -200,6 +207,7 @@ def plotData():
     
     ax[0].plot(Tid[0:], Temp[0:], 'b')
     ax[1].plot(Tid[0:], Temp_fir[0:], 'b')
+    ax[2].plot(Tid[0:], Temp_iir[0:], 'b')
  
    
 #---------------------------------------------------------------------
@@ -244,7 +252,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
             
-            MathCalculations(Tid, Temp, Temp_fir, m_verdi)
+            MathCalculations(Tid, Temp, Temp_fir, Temp_iir, m_verdi, alfa_verdi)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
@@ -279,7 +287,8 @@ def offline(filenameMeas, filenameCalcOffline):
                     CalculatedToFile = ""
                     CalculatedToFile += str(Tid[i]) + ","
                     CalculatedToFile += str(Temp[i]) + ","
-                    CalculatedToFile += str(Temp_fir[i]) + "\n"
+                    CalculatedToFile += str(Temp_fir[i]) + ","
+                    CalculatedToFile += str(Temp_iir[i]) + "\n"
                   
 
                    

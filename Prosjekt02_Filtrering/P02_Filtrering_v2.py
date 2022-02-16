@@ -123,8 +123,10 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        m_verdi = 150
-        Temp_fir = []             # tidsskritt
+        m_verdi = 10
+        alfa_verdi = 0.2
+        Temp_fir = []
+        Temp_iir = []             # tidsskritt
         
 
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
@@ -185,7 +187,7 @@ def main():
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Temp[-1]) + ","
+            MeasurementToFile += str(Temp[-1]) + "\n"
             
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
@@ -204,7 +206,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Tid, Temp, Temp_fir, m_verdi)
+            MathCalculations(Tid, Temp, Temp_fir,Temp_iir, m_verdi, alfa_verdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -236,7 +238,8 @@ def main():
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
                 CalculationsToFile = str(Temp[k]) + ","
-                CalculationsToFile += str(Temp_fir[k]) + "\n"
+                CalculationsToFile += str(Temp_fir[k]) + ","
+                CalculationsToFile += str(Temp_iir[k]) + "\n"
                 
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -272,6 +275,7 @@ def main():
 
                 # egne variable
                 DataToOnlinePlot["Temp_fir"] = (Temp_fir[-1])
+                DataToOnlinePlot["Temp_iir"] = (Temp_iir[-1])
                
 
                 # sender over data
@@ -334,14 +338,15 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Tid, Temp, Temp_fir,m_verdi):
+def MathCalculations(Tid, Temp, Temp_fir, Temp_iir,m_verdi, alfa_verdi):
     
     # Parametre
     
     
     
-    if len(Tid) == 0:
-        Temp.append(0)
+    if len(Tid) == 1:
+        Temp.append(-1)
+        Temp_iir.append(Temp[0])
         Temp_fir.append(Temp[0])
 
     else:
@@ -353,6 +358,7 @@ def MathCalculations(Tid, Temp, Temp_fir,m_verdi):
         sumTemp = sum(Temp[-m_verdi:])
 
         Temp_fir.append((1/m_verdi) * sumTemp)
+        Temp_iir.append((alfa_verdi*Temp[-1])+((1-alfa_verdi)*Temp_iir[-1]))
         
     #for (k in range(len(Tid) -1)):
 
