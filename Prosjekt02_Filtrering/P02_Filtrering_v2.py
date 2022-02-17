@@ -31,6 +31,8 @@ import socket
 import json
 import _thread
 import sys
+import time
+import random
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #            1) EXPERIMENT SETUP AND FILENAME
@@ -123,8 +125,8 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        m_verdi = 10
-        alfa_verdi = 0.2
+        m_verdi = 75
+        alfa_verdi = 0.001
         Temp_fir = []
         Temp_iir = []             # tidsskritt
         
@@ -137,6 +139,7 @@ def main():
 
         # Går inn i løkke
         while True:
+            #time.sleep(1)
 
             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             #                  5) GET TIME AND MEASUREMENT
@@ -155,7 +158,7 @@ def main():
                 # måletidspunkt
                 Tid.append(perf_counter() - starttidspunkt)
 
-            Temp.append(myColorSensor.reflection())
+            Temp.append(myColorSensor.reflection()+(random.randint(-2,2)))
             
             # --------------------------------------------------------
 
@@ -345,7 +348,7 @@ def MathCalculations(Tid, Temp, Temp_fir, Temp_iir,m_verdi, alfa_verdi):
     
     
     if len(Tid) == 1:
-        Temp.append(-1)
+        #Temp.append(-1)
         Temp_iir.append(Temp[0])
         Temp_fir.append(Temp[0])
 
