@@ -21,20 +21,20 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.123.25"
+EV3_IP = "169.254.83.224"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "Meas_P0X_BeskrivendeTekst_Y.txt"
+filenameMeas = "P03_meas_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOffline = ".txt"
-filenameCalcOffline = "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
+filenameCalcOffline = "P03_calcOffline_01.txt"
 #---------------------------------------------------------------------
 
 
@@ -53,7 +53,7 @@ if not online:
     # i hovedfilen. 
     
     Tid = []                # registring av tidspunkt for målinger
-    Lys = []                # måling av reflektert lys fra ColorSensor
+    Avstand = []                # måling av reflektert lys fra ColorSensor
      
     
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
@@ -76,7 +76,17 @@ if not online:
     # offline.
     
     Ts = []             # tidsskritt
+    Filter_IIR = []
+    Alfa_verdi = 0.02
+
     
+    deltaAvstand = []
+    Fart = []           #Deriverte
+    Avstand = []
+    iir_Fart = []       
+    iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
+
+
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
     #---------------------------------------------------------------------
@@ -101,12 +111,21 @@ else:
     
     # målinger
     Tid = []
-    Lys = []
+    Avstand = []
     
     
     # egne variable
     Ts = []
-    
+    Filter_IIR = []     #Filter 
+    Alfa_verdi = 0.02
+
+    deltaAvstand = []
+    Fart = []           #Deriverte
+    Avstand = []
+    iir_Fart = []       
+    iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
+
+
     
     print("D) online: LISTS FOR DATA TO PLOT INITIALIZED.")
     #---------------------------------------------------------------------
@@ -130,7 +149,7 @@ else:
 # Det er viktig å spesifisere riktig datatype og kolonne.
 def unpackMeasurement(rowOfMeasurement):
     Tid.append(float(rowOfMeasurement[0]))
-    Lys.append(int(rowOfMeasurement[1]))
+    Avstand.append(int(rowOfMeasurement[1]))
 #-------------------------------------------------------------
 
 
@@ -148,11 +167,16 @@ def unpackData(rowOfData):
 
     # målinger
     Tid.append(rowOfData["Tid"])
-    Lys.append(rowOfData["Lys"])
+    Avstand.append(rowOfData["Avstand"])
     
 
     # egne variable
     Ts.append(rowOfData["Ts"])
+    deltaAvstand.append(rowOfData["deltaAvstand"])
+    Fart.append(rowOfData["Fart"])
+    Avstand.append(rowOfData["Avstand"])
+    iir_Fart.append(rowOfData["iir_Fart"])
+    iir_Avstand.append(rowOfData["iir_Avstand"])
     
                 
 #-------------------------------------------------------------
@@ -167,29 +191,29 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True)
+fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
-    ax[0,0].set_title('Lys')
-    ax[0,1].set_title('JoyForover')
-    ax[1,0].set_title('PowerA')
-    ax[1,1].set_title('Vinkelposisjon motor A')
+    ax[0].set_title('Avstand')
+    ax[1].set_title('Fart')
+    ax[2].set_title('iir_Fart')
+
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
-    ax[1,0].set_xlabel('Tid [sec]')
-    ax[1,1].set_xlabel('Tid [sec]')
+    ax[0].set_xlabel('Tid [sec]')
+  
 
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
-    ax[0,0].plot(Tid[0:], Lys[0:], 'b')
-    ax[0,1].plot(Tid[0:], joyForward[0:], 'b')
-    ax[1,0].plot(Tid[0:], PowerA[0:], 'b')
-    ax[1,1].plot(Tid[0:], VinkelPosMotorA[0:], 'b')
+    ax[0].plot(Tid[0:], Avstand[0:], 'b')
+    ax[1].plot(Tid[0:], Fart[0:], 'b')
+    ax[2].plot(Tid[0:], iir_Fart[0:], 'b')
+   
 #---------------------------------------------------------------------
 
 
@@ -232,7 +256,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations( ...............)
+            MathCalculations(Tid, Ts, Avstand, Fart, iir_Avstand, iir_Fart, deltaAvstand, Alfa_verdi)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
@@ -255,19 +279,16 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0=Pos_vs_Hastighet, 1=Forward_vs_Side, \n"
-                CalculatedToFileHeader += "2=summeringAvPowerA, 3=powerA, 4=mellomRegninger \n"
+                CalculatedToFileHeader += "0=Fart, 1=iir_Fart, \n"
+           
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                    CalculatedToFile += str(Ts[i]) + ","
-                    CalculatedToFile += str(PowerA[i]) + ","
-                    CalculatedToFile += str(PowerB[i]) + ","
-                    CalculatedToFile += str(PowerC[i]) + ","
-                    CalculatedToFile += str(PowerD[i]) + "\n"
+                    CalculatedToFile += str(Fart[i]) + ","
+                    CalculatedToFile += str(iir_Fart[i]) + "\n"
                     f.write(CalculatedToFile)
         #---------------------------------------------------------
 

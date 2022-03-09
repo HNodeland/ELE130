@@ -41,13 +41,13 @@ import random
 wired = True
 
 # --> Filnavn for lagring av MÅLINGER som gjøres online
-filenameMeas = "Meas_P0X_BeskrivendeTekst_Y.txt"
+filenameMeas = "P03_meas_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres online
 #     Typisk navn:  "CalcOnline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOnline = ".txt"
-filenameCalcOnline = "CalcOnline_P0X_BeskrivendeTekst_Y.txt"
+filenameCalcOnline = "P03_calcOnline_01.txt"
 # --------------------------------------------------------------------
 
 
@@ -96,7 +96,7 @@ def main():
         #  --> 6) STORE MEASUREMENTS TO FILE
 
         Tid = []                # registring av tidspunkt for målinger
-        Lys = []                # måling av reflektert lys fra ColorSensor
+        Avstand = []                # måling av reflektert lys fra ColorSensor
         
 
         print("3) MEASUREMENTS. LISTS INITIALIZED.")
@@ -124,11 +124,15 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        Ts = []             # tidsskritt
-        Avstand = []
-        Filter_IIR = []     #Filter 
+        Ts = [0]             # tidsskritt
+         
         Alfa_verdi = 0.02
-
+        
+        deltaAvstand = []
+        Fart = []           #Deriverte
+        Avstand = []
+        iir_Fart = []       
+        iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
 
 
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
@@ -157,7 +161,7 @@ def main():
                 # måletidspunkt
                 Tid.append(perf_counter() - starttidspunkt)
 
-            Lys.append(myColorSensor.reflection())
+            Avstand.append(myColorSensor.reflection())
             
             # --------------------------------------------------------
 
@@ -182,14 +186,13 @@ def main():
             # Husk at siste element i strengen må være '\n'
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
-                MeasurementToFileHeader += "0=Tid, 1=Lys, 2=, 3= \n"
-                MeasurementToFileHeader += "4=, 5=, 6=, 7= \n"
-                MeasurementToFileHeader += "8=, 9= \n"
+                MeasurementToFileHeader += "0=Tid, 1=Avstand \n"
+                
                 robot["measurements"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Lys[-1]) + "\n"
+            MeasurementToFile += str(Avstand[-1]) + "\n"
             
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
@@ -208,7 +211,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(.......)
+            MathCalculations(Tid, Ts, Avstand, Fart, iir_Avstand, iir_Fart, deltaAvstand, Alfa_verdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -235,11 +238,10 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0=Ts, 1=PowerA, \n"
-                    CalculationsToFileHeader += "2=PowerB, 3=PowerC, 4=PowerD \n"
+                    CalculationsToFileHeader += "0=Fart, 1=iir_Fart \n"
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
-                CalculationsToFile += str(Ts[-1]) + ","
+                CalculationsToFile += str(Fart[-1]) + ", " + str(iir_Fart[-1])+"\n"
                 
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -270,11 +272,13 @@ def main():
 
                 # målinger
                 DataToOnlinePlot["Tid"] = (Tid[-1])
-                DataToOnlinePlot["Lys"] = (Lys[-1])
+                DataToOnlinePlot["Avstand"] = (Avstand[-1])
                 
 
                 # egne variable
-                DataToOnlinePlot["Ts"] = (Ts[-1])
+                
+                DataToOnlinePlot["Fart"] = (Fart[-1])
+                DataToOnlinePlot["iir_Fart"] = (iir_Fart[-1])
                 
 
                 # sender over data
@@ -337,23 +341,49 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(...............):
+def MathCalculations(Tid, Ts, Avstand, Fart, iir_Avstand, iir_Fart, deltaAvstand, Alfa_verdi):
 
     # Parametre
-    
+
+
     # Initialverdibereging
     
+    if len(Tid) == 1:
+        Ts.append(0)
+        Fart.append(0)
+        iir_Fart.append(0)
+        iir_Avstand.append(0)
+        deltaAvstand.append(0)
+        
+    elif len(Tid) == 2:
+        Fart.append(0)
+        iir_Fart.append(0)
+        Ts.append(Tid[-1] - Tid[-2])
+        deltaAvstand.append(Avstand[-1] - Avstand[-2])
+        iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+       
+    
+    
+    else:
+        Ts.append(Tid[-1] - Tid[-2])
+        deltaAvstand.append(Avstand[-1] - Avstand[-2])
+        iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+        
+        Fart.append(deltaAvstand[-1] / Ts[-1])     
+        iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+
+        
+
+
     # Matematiske beregninger 
     
+
+
     # Pådragsberegning
     
 
 #---------------------------------------------------------------------
 
-
-
-
-#def EulerForward(.....):
 
 
 if __name__ == '__main__':
