@@ -9,7 +9,7 @@ try:
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ----> Husk å oppdatere denne !!!!!!!!!!!!!!
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    from P0X_BeskrivendeTekst import MathCalculations
+    from P03_Derivasjon import MathCalculations
 except Exception as e:
     pass
     # print(e)
@@ -54,40 +54,7 @@ if not online:
     
     Tid = []                # registring av tidspunkt for målinger
     Lys = []                # måling av reflektert lys fra ColorSensor
-    LysDirekte = []         # måling av lys direkte inn fra ColorSensor
-    Bryter = []             # registrering av trykkbryter fra TouchSensor
-    Avstand = []            # måling av avstand fra UltrasonicSensor
-    GyroAngle = []          # måling av gyrovinkel fra GyroSensor
-    GyroRate = []           # måling av gyrovinkelfart fra GyroSensor
-
-    VinkelPosMotorA = []    # vinkelposisjon motor A
-    HastighetMotorA = []    # hastighet motor A
-    VinkelPosMotorB = []    # vinkelposisjon motor B 
-    HastighetMotorB = []    # hastighet motor B
-    VinkelPosMotorC = []    # vinkelposisjon motor C
-    HastighetMotorC = []    # hastighet motor C
-    VinkelPosMotorD = []    # vinkelposisjon motor D
-    HastighetMotorD = []    # hastighet motor D
-
-    joyForward = []         # måling av foroverbevegelse styrestikke
-    joySide = []            # måling av sidebevegelse styrestikke
-    joyTwist = []           # måling av vribevegelse styrestikke
-    joyPotMeter = []        # måling av potensionmeter styrestikke
-    joyPOVForward = []      # måling av foroverbevegelse toppledd
-    joyPOVSide = []         # måling av sidebevegelse toppledd
-
-    joy1 = []               # måling av knapp 1 (skyteknappen)
-    joy2 = []               # måling av knapp 2 (ved tommel)
-    joy3 = []               # måling av knapp 3 
-    joy4 = []               # måling av knapp 4 
-    joy5 = []               # måling av knapp 5 
-    joy6 = []               # måling av knapp 6 
-    joy7 = []               # måling av knapp 7 
-    joy8 = []               # måling av knapp 8 
-    joy9 = []               # måling av knapp 9 
-    joy10 = []              # måling av knapp 10 
-    joy11 = []              # måling av knapp 11 
-    joy12 = []              # måling av knapp 12 
+     
     
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
     #---------------------------------------------------------------------
@@ -109,10 +76,7 @@ if not online:
     # offline.
     
     Ts = []             # tidsskritt
-    PowerA = []         # berenging av motorpådrag A
-    PowerB = []         # berenging av motorpådrag B
-    PowerC = []         # berenging av motorpådrag C
-    PowerD = []         # berenging av motorpådrag D
+    
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
     #---------------------------------------------------------------------
@@ -138,15 +102,11 @@ else:
     # målinger
     Tid = []
     Lys = []
-    VinkelPosMotorA = []
-    joyForward = []
+    
     
     # egne variable
     Ts = []
-    PowerA = []
-    PowerB = []
-    PowerC = []
-    PowerD = []
+    
     
     print("D) online: LISTS FOR DATA TO PLOT INITIALIZED.")
     #---------------------------------------------------------------------
@@ -171,30 +131,6 @@ else:
 def unpackMeasurement(rowOfMeasurement):
     Tid.append(float(rowOfMeasurement[0]))
     Lys.append(int(rowOfMeasurement[1]))
-    LysDirekte.append(int(rowOfMeasurement[2]))
-    Bryter.append(int(rowOfMeasurement[3]))
-    Avstand.append(int(rowOfMeasurement[4]))
-    GyroAngle.append(int(rowOfMeasurement[5]))
-    GyroRate.append(int(rowOfMeasurement[6]))
-    GyroRate.append(int(rowOfMeasurement[7]))
-
-    VinkelPosMotorA.append(float(rowOfMeasurement[8]))
-    HastighetMotorA.append(float(rowOfMeasurement[9]))
-    VinkelPosMotorB.append(float(rowOfMeasurement[10]))
-    HastighetMotorC.append(float(rowOfMeasurement[11]))
-    .
-    ,
-    .
-    # i malen her mangler mange målinger, fyll ut selv det du trenger
-        
-    joyForward.append(float(rowOfMeasurement[ ]))
-    joySide.append(int(rowOfMeasurement[ ]))
-    joyTwist.append(int(rowOfMeasurement[ ]))
-    .
-    .
-    
-    # i malen her mangler mange målinger, fyll ut selv det du trenger
-
 #-------------------------------------------------------------
 
 
@@ -213,15 +149,11 @@ def unpackData(rowOfData):
     # målinger
     Tid.append(rowOfData["Tid"])
     Lys.append(rowOfData["Lys"])
-    VinkelPosMotorA.append(rowOfData["VinkelPosMotorA"])
-    joyForward.append(rowOfData["joyForward"])
+    
 
     # egne variable
     Ts.append(rowOfData["Ts"])
-    PowerA.append(rowOfData["PowerA"])
-    PowerB.append(rowOfData["PowerB"])
-    PowerC.append(rowOfData["PowerC"])
-    PowerD.append(rowOfData["PowerD"])
+    
                 
 #-------------------------------------------------------------
 

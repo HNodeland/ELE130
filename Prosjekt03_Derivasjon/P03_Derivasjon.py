@@ -31,6 +31,8 @@ import socket
 import json
 import _thread
 import sys
+import random
+
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #            1) EXPERIMENT SETUP AND FILENAME
@@ -65,19 +67,8 @@ def main():
         robot = Initialize(wired,filenameMeas,filenameCalcOnline)
 
         # oppdater portnummer
-        myColorSensor = ColorSensor(Port.SX)
-        myTouchSensor = TouchSensor(Port.SX)
-        myUltrasonicSensor = UltrasonicSensor(Port.SX)
-        myGyroSensor = GyroSensor(Port.SX)
-
-        motorA = Motor(Port.A)
-        motorA.reset_angle(0)
-        motorB = Motor(Port.B)
-        motorB.reset_angle(0)
-        motorC = Motor(Port.C)
-        motorC.reset_angle(0)
-        motorD = Motor(Port.D)
-        motorD.reset_angle(0)
+        myColorSensor = ColorSensor(Port.S1)
+        
 
         # Sjekker at joystick er tilkoplet EV3 
         if robot["joystick"]["in_file"] is not None:
@@ -106,40 +97,7 @@ def main():
 
         Tid = []                # registring av tidspunkt for målinger
         Lys = []                # måling av reflektert lys fra ColorSensor
-        LysDirekte = []         # måling av lys direkte inn fra ColorSensor
-        Bryter = []             # registrering av trykkbryter fra TouchSensor
-        Avstand = []            # måling av avstand fra UltrasonicSensor
-        GyroAngle = []          # måling av gyrovinkel fra GyroSensor
-        GyroRate = []           # måling av gyrovinkelfart fra GyroSensor
-
-        VinkelPosMotorA = []    # vinkelposisjon motor A
-        HastighetMotorA = []    # hastighet motor A
-        VinkelPosMotorB = []    # vinkelposisjon motor B 
-        HastighetMotorB = []    # hastighet motor B
-        VinkelPosMotorC = []    # vinkelposisjon motor C
-        HastighetMotorC = []    # hastighet motor C
-        VinkelPosMotorD = []    # vinkelposisjon motor D
-        HastighetMotorD = []    # hastighet motor D
-
-        joyForward = []         # måling av foroverbevegelse styrestikke
-        joySide = []            # måling av sidebevegelse styrestikke
-        joyTwist = []           # måling av vribevegelse styrestikke
-        joyPotMeter = []        # måling av potensionmeter styrestikke
-        joyPOVForward = []      # måling av foroverbevegelse toppledd
-        joyPOVSide = []         # måling av sidebevegelse toppledd
-
-        joy1 = []               # måling av knapp 1 (skyteknappen)
-        joy2 = []               # måling av knapp 2 (ved tommel)
-        joy3 = []               # måling av knapp 3 
-        joy4 = []               # måling av knapp 4 
-        joy5 = []               # måling av knapp 5 
-        joy6 = []               # måling av knapp 6 
-        joy7 = []               # måling av knapp 7 
-        joy8 = []               # måling av knapp 8 
-        joy9 = []               # måling av knapp 9 
-        joy10 = []              # måling av knapp 10 
-        joy11 = []              # måling av knapp 11 
-        joy12 = []              # måling av knapp 12 
+        
 
         print("3) MEASUREMENTS. LISTS INITIALIZED.")
         # ------------------------------------------------------------
@@ -167,10 +125,11 @@ def main():
         # i plottefilen. 
 
         Ts = []             # tidsskritt
-        PowerA = []         # berenging av motorpådrag A
-        PowerB = []         # berenging av motorpådrag B
-        PowerC = []         # berenging av motorpådrag C
-        PowerD = []         # berenging av motorpådrag D
+        Avstand = []
+        Filter_IIR = []     #Filter 
+        Alfa_verdi = 0.02
+
+
 
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
         # ------------------------------------------------------------
@@ -199,40 +158,7 @@ def main():
                 Tid.append(perf_counter() - starttidspunkt)
 
             Lys.append(myColorSensor.reflection())
-            LysDirekte.append(myColorSensor.ambient())
-            Bryter.append(myTouchSensor.pressed())
-            Avstand.append(myUltrasonicSensor.distance())
-            GyroAngle.append(myGyroSensor.angle())
-            GyroRate.append(myGyroSensor.speed())
-
-            VinkelPosMotorA.append(motorA.angle())
-            HastighetMotorA.append(motorA.speed())
-            VinkelPosMotorB.append(motorB.angle())
-            HastighetMotorB.append(motorB.speed())
-            VinkelPosMotorC.append(motorC.angle())
-            HastighetMotorC.append(motorC.speed())
-            VinkelPosMotorD.append(motorD.angle())
-            HastighetMotorD.append(motorD.speed())
-
-            joyForward.append(config.joyForwardInstance)
-            joySide.append(config.joySideInstance)
-            joyTwist.append(config.joyTwistInstance)
-            joyPotMeter.append(config.joyPotMeterInstance)
-            joyPOVForward.append(config.joyPOVForwardInstance)
-            joyPOVSide.append(config.joyPOVSideInstance)
-
-            joy1.append(config.joy1Instance)
-            joy2.append(config.joy2Instance)
-            joy3.append(config.joy3Instance)
-            joy4.append(config.joy4Instance)
-            joy5.append(config.joy5Instance)
-            joy6.append(config.joy6Instance)
-            joy7.append(config.joy7Instance)
-            joy8.append(config.joy8Instance)
-            joy9.append(config.joy9Instance)
-            joy10.append(config.joy10Instance)
-            joy11.append(config.joy11Instance)
-            joy12.append(config.joy12Instance)
+            
             # --------------------------------------------------------
 
 
@@ -263,41 +189,8 @@ def main():
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Lys[-1]) + ","
-            MeasurementToFile += str(LysDirekte[-1]) + ","
-            MeasurementToFile += str(Bryter[-1]) + ","
-            MeasurementToFile += str(Avstand[-1]) + ","
-            MeasurementToFile += str(GyroAngle[-1]) + ","
-            MeasurementToFile += str(GyroRate[-1]) + ","
-
-            MeasurementToFile += str(VinkelPosMotorA[-1]) + ","
-            MeasurementToFile += str(HastighetMotorA[-1]) + ","
-            MeasurementToFile += str(VinkelPosMotorB[-1]) + ","
-            MeasurementToFile += str(HastighetMotorB[-1]) + ","
-            MeasurementToFile += str(VinkelPosMotorC[-1]) + ","
-            MeasurementToFile += str(HastighetMotorC[-1]) + ","
-            MeasurementToFile += str(VinkelPosMotorD[-1]) + ","
-            MeasurementToFile += str(HastighetMotorD[-1]) + ","
-
-            MeasurementToFile += str(joyForward[-1]) + ","
-            MeasurementToFile += str(joySide[-1]) + ","
-            MeasurementToFile += str(joyTwist[-1]) + ","
-            MeasurementToFile += str(joyPotMeter[-1]) + ","
-            MeasurementToFile += str(joyPOVForward[-1]) + ","
-            MeasurementToFile += str(joyPOVSide[-1]) + ","
+            MeasurementToFile += str(Lys[-1]) + "\n"
             
-            MeasurementToFile += str(joy1[-1]) + ","
-            MeasurementToFile += str(joy2[-1]) + ","
-            MeasurementToFile += str(joy3[-1]) + ","
-            MeasurementToFile += str(joy4[-1]) + ","
-            MeasurementToFile += str(joy5[-1]) + ","
-            MeasurementToFile += str(joy6[-1]) + ","
-            MeasurementToFile += str(joy7[-1]) + ","
-            MeasurementToFile += str(joy8[-1]) + ","
-            MeasurementToFile += str(joy9[-1]) + ","
-            MeasurementToFile += str(joy10[-1]) + ","
-            MeasurementToFile += str(joy11[-1]) + ","
-            MeasurementToFile += str(joy12[-1]) + "\n"
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
             robot["measurements"].write(MeasurementToFile)
@@ -319,10 +212,7 @@ def main():
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
-            motorA.dc(PowerA[-1])
-            motorB.dc(PowerB[-1])
-            motorC.dc(PowerC[-1])
-            motorD.dc(PowerD[-1])
+            
             # --------------------------------------------------------
 
 
@@ -350,10 +240,7 @@ def main():
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
                 CalculationsToFile += str(Ts[-1]) + ","
-                CalculationsToFile += str(PowerA[-1]) + ","
-                CalculationsToFile += str(PowerB[-1]) + ","
-                CalculationsToFile += str(PowerC[-1]) + ","
-                CalculationsToFile += str(PowerD[-1]) + "\n"
+                
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
                 robot["calculations"].write(CalculationsToFile)
@@ -384,15 +271,11 @@ def main():
                 # målinger
                 DataToOnlinePlot["Tid"] = (Tid[-1])
                 DataToOnlinePlot["Lys"] = (Lys[-1])
-                DataToOnlinePlot["VinkelPosMotorA"] = (VinkelPosMotorA[-1])
-                DataToOnlinePlot["joyForward"] = (joyForward[-1])
+                
 
                 # egne variable
                 DataToOnlinePlot["Ts"] = (Ts[-1])
-                DataToOnlinePlot["PowerA"] = (PowerA[-1])
-                DataToOnlinePlot["PowerB"] = (PowerB[-1])
-                DataToOnlinePlot["PowerC"] = (PowerC[-1])
-                DataToOnlinePlot["PowerD"] = (PowerD[-1])
+                
 
                 # sender over data
                 msg = json.dumps(DataToOnlinePlot)
@@ -427,10 +310,7 @@ def main():
         # - brake() ruller videre, men bruker strømmen generert 
         #   av rotasjonen til å bremse.
         # - hold() bråstopper umiddelbart og holder posisjonen
-        motorA.stop()
-        motorB.brake()
-        motorC.hold()
-        motorD.hold()
+        
 
         # Lukker forbindelsen til både styrestikke og EV3.
         CloseJoystickAndEV3(robot, wired)
@@ -466,10 +346,7 @@ def MathCalculations(...............):
     # Matematiske beregninger 
     
     # Pådragsberegning
-    PowerA.append(......)
-    PowerB.append(......)
-    PowerC.append(......)
-    PowerD.append(......)
+    
 
 #---------------------------------------------------------------------
 
