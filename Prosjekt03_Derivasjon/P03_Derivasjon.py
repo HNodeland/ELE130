@@ -124,13 +124,13 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        Ts = [0]             # tidsskritt
+        Ts = []             # tidsskritt
          
         Alfa_verdi = 0.02
         
         deltaAvstand = []
         Fart = []           #Deriverte
-        Avstand = []
+        
         iir_Fart = []       
         iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
 
@@ -279,6 +279,7 @@ def main():
                 
                 DataToOnlinePlot["Fart"] = (Fart[-1])
                 DataToOnlinePlot["iir_Fart"] = (iir_Fart[-1])
+                DataToOnlinePlot["iir_Avstand"] = (iir_Avstand[-1])
                 
 
                 # sender over data
@@ -352,7 +353,7 @@ def MathCalculations(Tid, Ts, Avstand, Fart, iir_Avstand, iir_Fart, deltaAvstand
         Ts.append(0)
         Fart.append(0)
         iir_Fart.append(0)
-        iir_Avstand.append(0)
+        iir_Avstand.append(Avstand[-1])
         deltaAvstand.append(0)
         
     elif len(Tid) == 2:

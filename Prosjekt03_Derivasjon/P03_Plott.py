@@ -21,7 +21,7 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.83.224"
+EV3_IP = "169.254.187.70"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -171,10 +171,10 @@ def unpackData(rowOfData):
     
 
     # egne variable
-    Ts.append(rowOfData["Ts"])
-    deltaAvstand.append(rowOfData["deltaAvstand"])
+    
+    
     Fart.append(rowOfData["Fart"])
-    Avstand.append(rowOfData["Avstand"])
+    
     iir_Fart.append(rowOfData["iir_Fart"])
     iir_Avstand.append(rowOfData["iir_Avstand"])
     
@@ -191,15 +191,17 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
+fig, ax = plt.subplots(nrows=4, ncols=1, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
     ax[0].set_title('Avstand')
-    ax[1].set_title('Fart')
-    ax[2].set_title('iir_Fart')
+    ax[1].set_title('iir_Avstand')
+    ax[2].set_title('Fart')
+    ax[3].set_title('iir_Fart')
+    
 
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
@@ -211,8 +213,10 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
     ax[0].plot(Tid[0:], Avstand[0:], 'b')
-    ax[1].plot(Tid[0:], Fart[0:], 'b')
-    ax[2].plot(Tid[0:], iir_Fart[0:], 'b')
+    ax[1].plot(Tid[0:], iir_Avstand[0:], 'b')
+    ax[2].plot(Tid[0:], Fart[0:], 'b')
+    ax[3].plot(Tid[0:], iir_Fart[0:], 'b')
+    
    
 #---------------------------------------------------------------------
 
