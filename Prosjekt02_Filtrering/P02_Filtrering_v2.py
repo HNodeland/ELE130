@@ -343,15 +343,10 @@ def main():
 
 def MathCalculations(Tid, Temp, Temp_fir, Temp_iir,m_verdi, alfa_verdi):
     
-    # Parametre
-    
-    
-    
     if len(Tid) == 1:
         #Temp.append(-1)
         Temp_iir.append(Temp[0])
         Temp_fir.append(Temp[0])
-
     else:
         sumTemp = 0
         
