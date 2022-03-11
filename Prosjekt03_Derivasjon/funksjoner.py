@@ -35,14 +35,3 @@ def derivasjon(Index, Value, Derivative):
         Derivative.append(DeltaValue / DeltaIndex)
 
 
-def acceleration(Index, Value, accel, Alfa_verdi):
-    Value_iir = []
-    if len(Index) == 1:
-        Value.append(Value(0))
-        accel.append(0)
-    else:
-        Value_iir.append((Alfa_verdi*Value[-1])+((1-Alfa_verdi)*Value_iir[-1]))
-        DeltaIndex = (Index[-1] - Index[-2])            #Tidsskritt (Bredde)
-        DeltaValue = (Value[-1] - Value[-2])        #Funksjonsverdi (Høyde)
-        
-        accel.append(DeltaValue / DeltaIndex)
