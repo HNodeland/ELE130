@@ -32,7 +32,7 @@ import json
 import _thread
 import sys
 import random
-from funksjoner import derivasjon, iir_filtration
+from funksjoner import derivasjon, iir_filtration, derivasjon2, iir_filtration2
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #            1) EXPERIMENT SETUP AND FILENAME
@@ -124,7 +124,7 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        AlfaVerdi = 0.02
+        AlfaVerdi = 0.6
         
         FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
         
@@ -375,9 +375,9 @@ def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, Filt
         
         derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
         derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
-        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
+        iir_filtration2(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
         
-        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
+        derivasjon2(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
 
    
 

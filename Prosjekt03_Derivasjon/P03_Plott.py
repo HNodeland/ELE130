@@ -22,7 +22,7 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.26.94"
+EV3_IP = "169.254.143.82"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -167,7 +167,7 @@ def unpackData(rowOfData):
   
     
     FiltrertAvstand.append(rowOfData["FiltrertAvstand"])
-    RawFart.append(rowOfData["RawFart"])
+    #RawFart.append(rowOfData["RawFart"])
     Fart.append(rowOfData["Fart"])
     FiltrertFart.append(rowOfData["FiltrertFart"])
     UfiltrertAkselerasjon.append(rowOfData["UfiltrertAkselerasjon"])
@@ -186,25 +186,25 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=6, ncols=1, sharex=True)
+fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
   
-    ax[0].set_title('UfiltrertAvstand')
-    ax[1].set_title('FiltrertAvstand')
-    ax[2].set_title('RawFart')
-    ax[3].set_title('Fart')
-    ax[4].set_title('FiltrertFart')
-    ax[5].set_title('UfiltrertAkselerasjon')
+    ax[0].set_title('Avstand')
+    #ax[0].set_title('FiltrertAvstand')
+    #ax[2].set_title('RawFart')
+    ax[1].set_title('Fart')
+    #ax[1].set_title('FiltrertFart')
+    ax[2].set_title('Akselerasjon')
    
     
 
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
-    ax[5].set_xlabel('Tid [sec]')
+    ax[2].set_xlabel('Tid [sec]')
   
 
 
@@ -213,11 +213,11 @@ def figureTitles():
 def plotData():
 
     ax[0].plot(Tid[0:], UfiltrertAvstand[0:], 'b')
-    ax[1].plot(Tid[0:], FiltrertAvstand[0:], 'b')
-    ax[2].plot(Tid[0:], RawFart[0:], 'b')
-    ax[3].plot(Tid[0:], Fart[0:], 'b')
-    ax[4].plot(Tid[0:], FiltrertFart[0:], 'b')
-    ax[5].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'b')
+    ax[0].plot(Tid[0:], FiltrertAvstand[0:], 'r')
+    #ax[2].plot(Tid[0:], RawFart[0:], 'b')
+    ax[1].plot(Tid[0:], Fart[0:], 'b')
+    ax[1].plot(Tid[0:], FiltrertFart[0:], 'r')
+    ax[2].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'b')
  
     
    
