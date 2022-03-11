@@ -32,7 +32,7 @@ import json
 import _thread
 import sys
 import random
-from funksjoner import derivasjon, iir_filtration, derivasjon2, iir_filtration2
+from funksjoner import derivasjon, iir_filtration
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #            1) EXPERIMENT SETUP AND FILENAME
@@ -124,7 +124,7 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        AlfaVerdi = 0.6
+        AlfaVerdi = 0.3
         
         FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
         
@@ -133,6 +133,7 @@ def main():
         FiltrertFart = []
 
         UfiltrertAkselerasjon = []
+        FiltrertAkselerasjon = []
 
 
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
@@ -211,7 +212,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, AlfaVerdi)
+            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -245,7 +246,8 @@ def main():
                 CalculationsToFile += str(RawFart[-1])+", "
                 CalculationsToFile += str(Fart[-1])+", "
                 CalculationsToFile += str(FiltrertFart[-1])+", "
-                CalculationsToFile += str(UfiltrertAkselerasjon[-1])+"\n"
+                CalculationsToFile += str(UfiltrertAkselerasjon[-1])+", "
+                CalculationsToFile += str(FiltrertAkselerasjon[-1])+"\n"
                 
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -286,6 +288,7 @@ def main():
                 DataToOnlinePlot["Fart"] = (Fart[-1])
                 DataToOnlinePlot["FiltrertFart"] = (FiltrertFart[-1])
                 DataToOnlinePlot["UfiltrertAkselerasjon"] = (UfiltrertAkselerasjon[-1])
+                DataToOnlinePlot["FiltrertAkselerasjon"] = (FiltrertAkselerasjon[-1])
                 
                 
                 
@@ -350,7 +353,7 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, AlfaVerdi):
+def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi):
 
     if len(Tid) == 1:
         FiltrertAvstand.append(UfiltrertAvstand[-1])
@@ -360,6 +363,7 @@ def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, Filt
         FiltrertFart.append(0)
 
         UfiltrertAkselerasjon.append(0)
+        FiltrertAkselerasjon.append(0)
     
     elif len(Tid) == 2:
         iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
@@ -369,15 +373,17 @@ def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, Filt
         FiltrertFart.append(Fart[-1])
 
         UfiltrertAkselerasjon.append(0)
+        FiltrertAkselerasjon.append(0)
     
     else:
         iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
         
         derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
         derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
-        iir_filtration2(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
+        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
         
-        derivasjon2(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
+        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
+        iir_filtration(Tid, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi) #UfiltrertAkselerasjon
 
    
 

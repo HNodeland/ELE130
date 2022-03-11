@@ -115,7 +115,8 @@ else:
     Fart = []       
     FiltrertFart = []
 
-    UfiltrertAkselerasjon = []
+    UfiltrertAkselerasjon = [] 
+    FiltrertAkselerasjon = [] 
 
 
     
@@ -171,6 +172,7 @@ def unpackData(rowOfData):
     Fart.append(rowOfData["Fart"])
     FiltrertFart.append(rowOfData["FiltrertFart"])
     UfiltrertAkselerasjon.append(rowOfData["UfiltrertAkselerasjon"])
+    FiltrertAkselerasjon.append(rowOfData["FiltrertAkselerasjon"])
     
     
                 
@@ -218,6 +220,7 @@ def plotData():
     ax[1].plot(Tid[0:], Fart[0:], 'b')
     ax[1].plot(Tid[0:], FiltrertFart[0:], 'r')
     ax[2].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'b')
+    ax[2].plot(Tid[0:], FiltrertAkselerasjon[0:], 'r')
  
     
    
@@ -263,7 +266,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, AlfaVerdi)
+            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
