@@ -32,12 +32,12 @@ import json
 import _thread
 import sys
 import random
-
+from funksjoner import derivasjon, iir_filtration
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #            1) EXPERIMENT SETUP AND FILENAME
 #
-# Skal prosjektet gjennomføres med eller uten USB-ledning?
+# Skal  prosjektet gjennomføres med eller uten USB-ledning?
 wired = True
 
 # --> Filnavn for lagring av MÅLINGER som gjøres online
@@ -124,15 +124,15 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        Ts = []             # tidsskritt
-         
-        Alfa_verdi = 0.02
+        Alfa_verdi = 0.2
         
-        deltaAvstand = []
-        Fart = []           #Deriverte
-        
-        iir_Fart = []       
         iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
+        
+        Fart = []           #Deriverte        
+        iir_Fart = []       
+        iir2_Fart = []
+
+        iir_Aks = []
 
 
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
@@ -211,7 +211,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Tid, Ts, Avstand, Fart, iir_Avstand, iir_Fart, deltaAvstand, Alfa_verdi)
+            MathCalculations(Tid, Avstand, iir_Avstand, Fart, iir_Fart, iir2_Fart, iir_Aks, Alfa_verdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -238,10 +238,14 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0=Fart, 1=iir_Fart \n"
+                    CalculationsToFileHeader += "0=iir_Avstand, 1=Fart, 2=iir_Fart, 3=iir2_Fart, 4=iir_Aks \n"
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
-                CalculationsToFile += str(Fart[-1]) + ", " + str(iir_Fart[-1])+"\n"
+                CalculationsToFile += str(iir_Avstand[-1])+", "
+                CalculationsToFile += str(Fart[-1])+", "
+                CalculationsToFile += str(iir_Fart[-1])+", "
+                CalculationsToFile += str(iir2_Fart[-1])+", "
+                CalculationsToFile += str(iir_Aks[-1])+"\n"
                 
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -277,9 +281,13 @@ def main():
 
                 # egne variable
                 
+                DataToOnlinePlot["iir_Avstand"] = (iir_Avstand[-1])
                 DataToOnlinePlot["Fart"] = (Fart[-1])
                 DataToOnlinePlot["iir_Fart"] = (iir_Fart[-1])
-                DataToOnlinePlot["iir_Avstand"] = (iir_Avstand[-1])
+                DataToOnlinePlot["iir2_Fart"] = (iir2_Fart[-1])
+                DataToOnlinePlot["iir_Aks"] = (iir_Aks[-1])
+                
+                
                 
 
                 # sender over data
@@ -342,42 +350,125 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Tid, Ts, Avstand, Fart, iir_Avstand, iir_Fart, deltaAvstand, Alfa_verdi):
+def MathCalculations(Tid, Avstand, iir_Avstand, Fart, iir_Fart, iir2_Fart, iir_Aks, Alfa_verdi):
+
+    if len(Tid) == 1:
+        iir_Avstand.append(Avstand[-1])
+        
+        Fart.append(0)
+        iir_Fart.append(0)
+        iir2_Fart.append(0)
+
+        iir_Aks.append(0)
+    
+    elif len(Tid) == 2:
+        iir_filtration(Tid, Avstand, iir_Avstand, Alfa_verdi) #iir_Avstand
+        
+        derivasjon(Tid, Avstand, Fart) #Fart, rådata
+        derivasjon(Tid, iir_Avstand, iir_Fart) #iir_Fart
+        iir2_Fart.append(iir_Fart[-1])
+
+        iir_Aks.append(0)
+    
+    else:
+        iir_filtration(Tid, Avstand, iir_Avstand, Alfa_verdi) #iir_Avstand
+        
+        derivasjon(Tid, Avstand, Fart) #Fart, rådata
+        derivasjon(Tid, iir_Avstand, iir_Fart) #iir_Fart
+        iir_filtration(Tid, iir_Fart, iir2_Fart, Alfa_verdi) #iir2_Fart
+        
+        derivasjon(Tid, iir2_Fart, iir_Aks) #iir_Aks
+
+   
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
 
     # Parametre
 
 
     # Initialverdibereging
     
-    if len(Tid) == 1:
-        Ts.append(0)
-        Fart.append(0)
-        iir_Fart.append(0)
-        iir_Avstand.append(Avstand[-1])
-        deltaAvstand.append(0)
+    # if len(Tid) == 1:
+    #     Ts.append(0)
+    #     deltaAvstand.append(0)
+    #     Fart.append(0)
+    #     iir_Fart.append(0)
+    #     iir2_Fart.append(0)
+    #     iir_Avstand.append(Avstand[-1])
         
-    elif len(Tid) == 2:
-        Fart.append(0)
-        iir_Fart.append(0)
-        Ts.append(Tid[-1] - Tid[-2])
-        deltaAvstand.append(Avstand[-1] - Avstand[-2])
-        iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
-       
-    
-    
-    else:
-        Ts.append(Tid[-1] - Tid[-2])
-        deltaAvstand.append(Avstand[-1] - Avstand[-2])
-        iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+    #     iir_Aks.append(0)
         
-        Fart.append(deltaAvstand[-1] / Ts[-1])     
-        iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+    # elif len(Tid) == 2:
+    #     Fart.append(0)
+    #     iir_Fart.append(0)
+    #     Ts.append(Tid[-1] - Tid[-2])
+    #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
+    #     iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+
+        
+        # Ts.append(Tid[-1] - Tid[-2])
+        # deltaAvstand.append(Avstand[-1] - Avstand[-2])
+        # iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+  
+        # Fart.append(deltaAvstand[-1] / Ts[-1])     
+        # iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+        # iir2_Fart.append(iir_Fart[-1])
+
+        # iir_Aks.append(0)
+
+    # elif len(Tid) == 3:
+    #     Ts.append(Tid[-1] - Tid[-2])
+    #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
+        
+    #     iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+        
+    #     Fart.append(deltaAvstand[-1] / Ts[-1]) 
+    #     iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+    #     iir2_Fart.append(iir_Fart[-1])
+
+    #     iir_Aks.append(0)
+
+    #elif len(Tid) == 4:
+        # Ts.append(Tid[-1] - Tid[-2])
+        # deltaAvstand.append(Avstand[-1] - Avstand[-2])
+        
+        # iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+        
+        # Fart.append(deltaAvstand[-1] / Ts[-1]) 
+        # iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+        # iir2_Fart.append(Alfa_verdi*iir_Fart[-1])+((1-Alfa_verdi)*iir2_Fart[-1])
+
+        # iir_Aks.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
+
+    
+    # else:
+    #     Ts.append(Tid[-1] - Tid[-2])
+    #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
+    #     iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+        
+    #     Fart.append(deltaAvstand[-1] / Ts[-1])     
+    #     iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+    #     iir2_Fart.append(Alfa_verdi*iir_Fart[-1])+((1-Alfa_verdi)*iir2_Fart[-1])
+
+    #     iir_Aks.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
 
         
 
 
     # Matematiske beregninger 
-    
+
 
 
     # Pådragsberegning
