@@ -96,7 +96,7 @@ def main():
         #  --> 6) STORE MEASUREMENTS TO FILE
 
         Tid = []                # registring av tidspunkt for målinger
-        Avstand = []                # måling av reflektert lys fra ColorSensor
+        UfiltrertAvstand = []                # måling av reflektert lys fra ColorSensor
         
 
         print("3) MEASUREMENTS. LISTS INITIALIZED.")
@@ -124,15 +124,15 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        Alfa_verdi = 0.2
+        AlfaVerdi = 0.02
         
-        iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
+        FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
         
-        Fart = []           #Deriverte        
-        iir_Fart = []       
-        iir2_Fart = []
+        RawFart = []           #Deriverte        
+        Fart = []       
+        FiltrertFart = []
 
-        iir_Aks = []
+        UfiltrertAkselerasjon = []
 
 
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
@@ -161,7 +161,7 @@ def main():
                 # måletidspunkt
                 Tid.append(perf_counter() - starttidspunkt)
 
-            Avstand.append(myColorSensor.reflection())
+            UfiltrertAvstand.append(myColorSensor.reflection())
             
             # --------------------------------------------------------
 
@@ -186,13 +186,13 @@ def main():
             # Husk at siste element i strengen må være '\n'
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
-                MeasurementToFileHeader += "0=Tid, 1=Avstand \n"
+                MeasurementToFileHeader += "0=Tid, 1=UfiltrertAvstand \n"
                 
                 robot["measurements"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Avstand[-1]) + "\n"
+            MeasurementToFile += str(UfiltrertAvstand[-1]) + "\n"
             
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
@@ -211,7 +211,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Tid, Avstand, iir_Avstand, Fart, iir_Fart, iir2_Fart, iir_Aks, Alfa_verdi)
+            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, AlfaVerdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -238,14 +238,14 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0=iir_Avstand, 1=Fart, 2=iir_Fart, 3=iir2_Fart, 4=iir_Aks \n"
+                    CalculationsToFileHeader += "0=FiltrertAvstand, 1=RawFart, 2=Fart, 3=FiltrertFart, 4=UfiltrertAkselerasjon \n"
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
-                CalculationsToFile += str(iir_Avstand[-1])+", "
+                CalculationsToFile += str(FiltrertAvstand[-1])+", "
+                CalculationsToFile += str(RawFart[-1])+", "
                 CalculationsToFile += str(Fart[-1])+", "
-                CalculationsToFile += str(iir_Fart[-1])+", "
-                CalculationsToFile += str(iir2_Fart[-1])+", "
-                CalculationsToFile += str(iir_Aks[-1])+"\n"
+                CalculationsToFile += str(FiltrertFart[-1])+", "
+                CalculationsToFile += str(UfiltrertAkselerasjon[-1])+"\n"
                 
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -276,16 +276,16 @@ def main():
 
                 # målinger
                 DataToOnlinePlot["Tid"] = (Tid[-1])
-                DataToOnlinePlot["Avstand"] = (Avstand[-1])
+                DataToOnlinePlot["UfiltrertAvstand"] = (UfiltrertAvstand[-1])
                 
 
                 # egne variable
                 
-                DataToOnlinePlot["iir_Avstand"] = (iir_Avstand[-1])
+                DataToOnlinePlot["FiltrertAvstand"] = (FiltrertAvstand[-1])
+                DataToOnlinePlot["RawFart"] = (RawFart[-1])
                 DataToOnlinePlot["Fart"] = (Fart[-1])
-                DataToOnlinePlot["iir_Fart"] = (iir_Fart[-1])
-                DataToOnlinePlot["iir2_Fart"] = (iir2_Fart[-1])
-                DataToOnlinePlot["iir_Aks"] = (iir_Aks[-1])
+                DataToOnlinePlot["FiltrertFart"] = (FiltrertFart[-1])
+                DataToOnlinePlot["UfiltrertAkselerasjon"] = (UfiltrertAkselerasjon[-1])
                 
                 
                 
@@ -350,41 +350,47 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Tid, Avstand, iir_Avstand, Fart, iir_Fart, iir2_Fart, iir_Aks, Alfa_verdi):
+def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, AlfaVerdi):
 
     if len(Tid) == 1:
-        iir_Avstand.append(Avstand[-1])
+        FiltrertAvstand.append(UfiltrertAvstand[-1])
         
+        RawFart.append(0)
         Fart.append(0)
-        iir_Fart.append(0)
-        iir2_Fart.append(0)
+        FiltrertFart.append(0)
 
-        iir_Aks.append(0)
+        UfiltrertAkselerasjon.append(0)
     
     elif len(Tid) == 2:
-        iir_filtration(Tid, Avstand, iir_Avstand, Alfa_verdi) #iir_Avstand
+        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
         
-        derivasjon(Tid, Avstand, Fart) #Fart, rådata
-        derivasjon(Tid, iir_Avstand, iir_Fart) #iir_Fart
-        iir2_Fart.append(iir_Fart[-1])
+        derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
+        derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
+        FiltrertFart.append(Fart[-1])
 
-        iir_Aks.append(0)
+        UfiltrertAkselerasjon.append(0)
     
     else:
-        iir_filtration(Tid, Avstand, iir_Avstand, Alfa_verdi) #iir_Avstand
+        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
         
-        derivasjon(Tid, Avstand, Fart) #Fart, rådata
-        derivasjon(Tid, iir_Avstand, iir_Fart) #iir_Fart
-        iir_filtration(Tid, iir_Fart, iir2_Fart, Alfa_verdi) #iir2_Fart
+        derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
+        derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
+        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
         
-        derivasjon(Tid, iir2_Fart, iir_Aks) #iir_Aks
+        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
 
    
 
 
         
+# Avstand = rådata
+# Avstand => Filtrering => FiltrertAvstand
 
+# Avstand => derivasjon => Fart
+# FiltrertAvstand = > Derivasjon => iir_Fart
+# iir_Fart => Filtrering => iir2_Fart
 
+# iir2_Fart => Derivasjon => aks
 
 
 
@@ -406,63 +412,63 @@ def MathCalculations(Tid, Avstand, iir_Avstand, Fart, iir_Fart, iir2_Fart, iir_A
     #     Fart.append(0)
     #     iir_Fart.append(0)
     #     iir2_Fart.append(0)
-    #     iir_Avstand.append(Avstand[-1])
+    #     FiltrertAvstand.append(Avstand[-1])
         
-    #     iir_Aks.append(0)
+    #     UfiltrertAkselerasjon.append(0)
         
     # elif len(Tid) == 2:
     #     Fart.append(0)
     #     iir_Fart.append(0)
     #     Ts.append(Tid[-1] - Tid[-2])
     #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
-    #     iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+    #     FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
 
         
         # Ts.append(Tid[-1] - Tid[-2])
         # deltaAvstand.append(Avstand[-1] - Avstand[-2])
-        # iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+        # FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
   
         # Fart.append(deltaAvstand[-1] / Ts[-1])     
-        # iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+        # iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
         # iir2_Fart.append(iir_Fart[-1])
 
-        # iir_Aks.append(0)
+        # UfiltrertAkselerasjon.append(0)
 
     # elif len(Tid) == 3:
     #     Ts.append(Tid[-1] - Tid[-2])
     #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
         
-    #     iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+    #     FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
         
     #     Fart.append(deltaAvstand[-1] / Ts[-1]) 
-    #     iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+    #     iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
     #     iir2_Fart.append(iir_Fart[-1])
 
-    #     iir_Aks.append(0)
+    #     UfiltrertAkselerasjon.append(0)
 
     #elif len(Tid) == 4:
         # Ts.append(Tid[-1] - Tid[-2])
         # deltaAvstand.append(Avstand[-1] - Avstand[-2])
         
-        # iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+        # FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
         
         # Fart.append(deltaAvstand[-1] / Ts[-1]) 
-        # iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+        # iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
         # iir2_Fart.append(Alfa_verdi*iir_Fart[-1])+((1-Alfa_verdi)*iir2_Fart[-1])
 
-        # iir_Aks.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
+        # UfiltrertAkselerasjon.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
 
     
     # else:
     #     Ts.append(Tid[-1] - Tid[-2])
     #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
-    #     iir_Avstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*iir_Avstand[-1]))
+    #     FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
         
     #     Fart.append(deltaAvstand[-1] / Ts[-1])     
-    #     iir_Fart.append((iir_Avstand[-1] - iir_Avstand[-2])/Ts[-1])
+    #     iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
     #     iir2_Fart.append(Alfa_verdi*iir_Fart[-1])+((1-Alfa_verdi)*iir2_Fart[-1])
 
-    #     iir_Aks.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
+    #     UfiltrertAkselerasjon.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
 
         
 

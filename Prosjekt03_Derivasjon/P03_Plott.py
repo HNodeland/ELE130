@@ -22,7 +22,7 @@ except Exception as e:
 online = True
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.124.101"
+EV3_IP = "169.254.26.94"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
@@ -54,7 +54,7 @@ if not online:
     # i hovedfilen. 
     
     Tid = []                # registring av tidspunkt for målinger
-    Avstand = []                # måling av reflektert lys fra ColorSensor
+    UfiltrertAvstand = []                # måling av reflektert lys fra ColorSensor
      
     
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
@@ -103,19 +103,19 @@ else:
     
     # målinger
     Tid = []
-    Avstand = []
+    UfiltrertAvstand = []
     
     
     # egne variable
-    Alfa_verdi = 0.2
+    AlfaVerdi = 0.2
         
-    iir_Avstand = []    #Verdier som blir brukt for å lage iir_Fart
+    FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
     
-    Fart = []           #Deriverte        
-    iir_Fart = []       
-    iir2_Fart = []
+    RawFart = []           #Deriverte        
+    Fart = []       
+    FiltrertFart = []
 
-    iir_Aks = []
+    UfiltrertAkselerasjon = []
 
 
     
@@ -141,7 +141,7 @@ else:
 # Det er viktig å spesifisere riktig datatype og kolonne.
 def unpackMeasurement(rowOfMeasurement):
     Tid.append(float(rowOfMeasurement[0]))
-    Avstand.append(int(rowOfMeasurement[1]))
+    UfiltrertAvstand.append(int(rowOfMeasurement[1]))
 #-------------------------------------------------------------
 
 
@@ -159,18 +159,18 @@ def unpackData(rowOfData):
 
     # målinger
     Tid.append(rowOfData["Tid"])
-    Avstand.append(rowOfData["Avstand"])
+    UfiltrertAvstand.append(rowOfData["UfiltrertAvstand"])
     
 
     # egne variable
     
   
     
-    iir_Avstand.append(rowOfData["iir_Avstand"])
+    FiltrertAvstand.append(rowOfData["FiltrertAvstand"])
+    RawFart.append(rowOfData["RawFart"])
     Fart.append(rowOfData["Fart"])
-    iir_Fart.append(rowOfData["iir_Fart"])
-    iir2_Fart.append(rowOfData["iir2_Fart"])
-    iir_Aks.append(rowOfData["iir_Aks"])
+    FiltrertFart.append(rowOfData["FiltrertFart"])
+    UfiltrertAkselerasjon.append(rowOfData["UfiltrertAkselerasjon"])
     
     
                 
@@ -193,12 +193,12 @@ fig, ax = plt.subplots(nrows=6, ncols=1, sharex=True)
 def figureTitles():
     global ax
   
-    ax[0].set_title('Avstand')
-    ax[1].set_title('iir_Avstand')
-    ax[2].set_title('Fart')
-    ax[3].set_title('iir_Fart')
-    ax[4].set_title('iir2_Fart')
-    ax[5].set_title('iir_aks')
+    ax[0].set_title('UfiltrertAvstand')
+    ax[1].set_title('FiltrertAvstand')
+    ax[2].set_title('RawFart')
+    ax[3].set_title('Fart')
+    ax[4].set_title('FiltrertFart')
+    ax[5].set_title('UfiltrertAkselerasjon')
    
     
 
@@ -212,12 +212,12 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
 
-    ax[0].plot(Tid[0:], Avstand[0:], 'b')
-    ax[1].plot(Tid[0:], iir_Avstand[0:], 'b')
-    ax[2].plot(Tid[0:], Fart[0:], 'b')
-    ax[3].plot(Tid[0:], iir_Fart[0:], 'b')
-    ax[4].plot(Tid[0:], iir2_Fart[0:], 'b')
-    ax[5].plot(Tid[0:], iir_Aks[0:], 'b')
+    ax[0].plot(Tid[0:], UfiltrertAvstand[0:], 'b')
+    ax[1].plot(Tid[0:], FiltrertAvstand[0:], 'b')
+    ax[2].plot(Tid[0:], RawFart[0:], 'b')
+    ax[3].plot(Tid[0:], Fart[0:], 'b')
+    ax[4].plot(Tid[0:], FiltrertFart[0:], 'b')
+    ax[5].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'b')
  
     
    
@@ -263,7 +263,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Tid, Avstand, iir_Avstand, Fart, iir_Fart, iir2_Fart, iir_Aks, Alfa_verdi)
+            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, AlfaVerdi)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
@@ -294,7 +294,7 @@ def offline(filenameMeas, filenameCalcOffline):
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                    CalculatedToFile += str(Fart[i]) + ","
+                    CalculatedToFile += str(RawFart[i]) + ","
                     f.write(CalculatedToFile)
         #---------------------------------------------------------
 
