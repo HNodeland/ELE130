@@ -28,7 +28,7 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P04_meas_testkjoring_05.txt"
+filenameMeas = "measurements/P04_meas_testkjoring_06.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -255,14 +255,13 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
     ax[0,0].plot(Tid[0:], Lys[0:], 'b')
-    ax[0,1].plot(Tid[1:], Avvik[0:], 'b')
+    ax[0,1].plot(Tid[0:], Avvik[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerA[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerB[0:], 'r')
-    ax[1,1].plot(Tid[1:], IAEliste[0:], 'b')
-    ax[2,0].plot(Tid[1:], Tva[0:], 'b')
-    ax[2,0].plot(Tid[1:], Tvb[0:], 'r')
-
-    ax[2,1].plot(Tid[1:], MAEliste[0:], 'b')
+    ax[1,1].plot(Tid[0:], IAEliste[0:], 'b')
+    ax[2,0].plot(Tid[0:], Tva[0:], 'b')
+    ax[2,0].plot(Tid[0:], Tvb[0:], 'r')
+    ax[2,1].plot(Tid[0:], MAEliste[0:], 'b')
 #---------------------------------------------------------------------
 
 
