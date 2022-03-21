@@ -1,0 +1,7 @@
+2) EQUIPMENT. INITIALIZE MOTORS AND SENSORS.
+3) MEASUREMENTS. LISTS INITIALIZED.
+4) OWN VARIABLES. LISTS INITIALIZED.
+Thread started
+Traceback (most recent call last):
+  File "/home/robot/Prosjekt04_ManuellKjoring/P04_ManuellKjoring.py", line 252, in main
+IndexError: list index out of range
