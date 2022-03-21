@@ -1,9 +1,9 @@
-def EulerForward(IntValueOld, FunctionValue, TimeStep):
-    if len(IntValueOld) == 1:
-        IntValueOld.append(0)
+def EulerForward(IntValue, FunctionValue, TimeStep):
+    if len(IntValue) == 1:
+        IntValue.append(0)
 
     else:
-        IntValueOld.append(IntValueOld[-1] + TimeStep[-1]*FunctionValue[-1])
+        IntValue.append(IntValue[-1] + TimeStep[-1]*FunctionValue[-1])
     
 
 def iir_filtration(Index, Value, Value_iir, Alfa_verdi):

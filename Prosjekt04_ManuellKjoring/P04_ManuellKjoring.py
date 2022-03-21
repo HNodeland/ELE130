@@ -143,13 +143,15 @@ def main():
         # i plottefilen. 
         PowerA = []         # berenging av motorpådrag A
         PowerB = []         # berenging av motorpådrag B
-        # Ts = []
+        Ts = []
 
         Avvik = []          #avvik = referanse måling - lys(k)
 
-        # IAEliste = []
-        # MAEliste = []
+        IAEliste = []
+        MAEliste = []
        
+        Tva = []
+        Tvb = []
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
         # ------------------------------------------------------------
 
@@ -213,18 +215,18 @@ def main():
             # Husk at siste element i strengen må være '\n'
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
-                MeasurementToFileHeader += "0=Tid, 1=Lys, 2=VinkelPosMotorA, 3=HastighetMotorA \n"
-                MeasurementToFileHeader += "4=VinkelPosMotorB, 5=HastighetMotorB, 6=joyForward, 7=JoySide \n"                
+                MeasurementToFileHeader += "0=Tid, 1=Lys, 2=joyForward, 3=joySide\n" #2=VinkelPosMotorA, 3=HastighetMotorA \n"
+                #MeasurementToFileHeader += "4=VinkelPosMotorB, 5=HastighetMotorB, 6=joyForward, 7=JoySide \n"                
                 robot["measurements"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
             MeasurementToFile += str(Lys[-1]) + ","
            
-            MeasurementToFile += str(VinkelPosMotorA[-1]) + ","
-            MeasurementToFile += str(HastighetMotorA[-1]) + ","
-            MeasurementToFile += str(VinkelPosMotorB[-1]) + ","
-            MeasurementToFile += str(HastighetMotorB[-1]) + ","
+            # MeasurementToFile += str(VinkelPosMotorA[-1]) + ","
+            # MeasurementToFile += str(HastighetMotorA[-1]) + ","
+            # MeasurementToFile += str(VinkelPosMotorB[-1]) + ","
+            # MeasurementToFile += str(HastighetMotorB[-1]) + ","
            
             MeasurementToFile += str(joyForward[-1]) + ","
             MeasurementToFile += str(joySide[-1]) + "\n"          
@@ -245,7 +247,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Lys, Tid, PowerA, PowerB, joyForward, joySide, Avvik)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -274,19 +276,23 @@ def main():
             if len(filenameCalcOnline)>4:
                 if k == 0:
                     CalculationsToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                    CalculationsToFileHeader += "0=PowerA, \n"
-                    CalculationsToFileHeader += "1=PowerB\n"
-                    CalculationsToFileHeader += "2=Avvik\n"
-                    CalculationsToFileHeader += "3=IAE\n"
-                    CalculationsToFileHeader += "4=MAE\n"
+                    CalculationsToFileHeader += "0=PowerA, "
+                    CalculationsToFileHeader += "1=PowerB, "
+                    CalculationsToFileHeader += "2=Avvik, "
+                    CalculationsToFileHeader += "3=IAE, "
+                    CalculationsToFileHeader += "4=MAE, "
+                    CalculationsToFileHeader += "4=Tva, "
+                    CalculationsToFileHeader += "4=Tvb \n"
 
                     robot["calculations"].write(CalculationsToFileHeader)
                 CalculationsToFile = ""
                 CalculationsToFile += str(PowerA[-1]) + ","
                 CalculationsToFile += str(PowerB[-1]) + ","
-                CalculationsToFile += str(Avvik[-1]) + "\n"
-                # CalculationsToFile += str(IAEliste[-1]) + ","
-                # CalculationsToFile += str(MAEliste[-1]) + "\n"
+                CalculationsToFile += str(Avvik[-1]) + ","
+                CalculationsToFile += str(IAEliste[-1]) + ","
+                CalculationsToFile += str(MAEliste[-1]) + ","
+                CalculationsToFile += str(Tva[-1]) + ","
+                CalculationsToFile += str(Tvb[-1]) + "\n"
                 
 
                 # Skriv CalcultedToFile til .txt-filen navngitt i seksjon 1)
@@ -333,8 +339,10 @@ def main():
                 
 
                 DataToOnlinePlot["Avvik"] = (Avvik[-1])
-                # DataToOnlinePlot["IAEliste"] = (IAEliste[-1])
-                # DataToOnlinePlot["MAEliste"] = (MAEliste[-1])
+                DataToOnlinePlot["IAEliste"] = (IAEliste[-1])
+                DataToOnlinePlot["MAEliste"] = (MAEliste[-1])
+                DataToOnlinePlot["Tva"] = (Tva[-1])
+                DataToOnlinePlot["Tvb"] = (Tvb[-1])
 
                 # sender over data
                 msg = json.dumps(DataToOnlinePlot)
@@ -398,40 +406,49 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Lys, Tid, PowerA, PowerB, joyForward, joySide, Avvik):
+def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb):
     if Lys[-1] < 60: #Stopper bilen når den treffer hvitt.
         # Parametre
         a = 0.5
         b = 0.35
         referanse = Lys[0]
+        MAEsum = 0
+        TvaSum = 0
+        TvbSum = 0
 
         if len(Tid) == 1:
             referanse = Lys[0]
             Avvik.append(0)
+            Ts.append(0)
+            IAEliste.append(0)
+            MAEliste.append(0)     
+            Tva.append(0)
+            Tvb.append(0)   
+            PowerA.append(joyForward[-1]*a + joySide[-1]*b)
+            PowerB.append(joyForward[-1]*a - joySide[-1]*b)    
         else:
             Avvik.append(referanse - Lys[-1])
+            Ts.append(Tid[-1] - Tid[-2])
+
+            EulerForward(IAEliste, Avvik, Ts)
+            
 
 
-        #if len(Tid) == 1:
-            #referanse = Lys[0]
-            #Avvik.append(0)
-            #IAEliste.append(0)
-            #MAEliste.append(0)
-            #Ts.append(0)
+            n = len(Tid)
+            for i in range(n):
+                MAEsum += abs(Avvik[i])
+                
+                # TvaSum += abs(PowerA[i+1] - PowerA[i])
+                # TvbSum += abs(PowerB[i+1] - PowerB[i])
 
-        #else:
-           # Avvik.append(Lys[-1] - referanse)  #e(t)
-            #Ts.append(Tid[-1] - Tid[-2])
-
-            #EulerForward(Ts, Avvik, IAEliste)
-            #n = len(Tid)
-            #MAEliste.append((1/n) * sum(abs(Avvik[0:n])))
+            MAEliste.append((1/(n+1)) * MAEsum)
 
 
-            # Pådragsberegning
+            PowerA.append(joyForward[-1]*a + joySide[-1]*b)
+            PowerB.append(joyForward[-1]*a - joySide[-1]*b)
 
-        PowerA.append(joyForward[-1]*a + joySide[-1]*b)
-        PowerB.append(joyForward[-1]*a - joySide[-1]*b)
+            Tva.append(Tva[-1] + abs(PowerA[-1] - PowerA[-2]))
+            Tvb.append(Tva[-1] + abs(PowerB[-1] - PowerB[-2]))
         
     else:
         PowerA.append(0)

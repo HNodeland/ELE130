@@ -28,7 +28,7 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "P04_meas_01.txt"
+filenameMeas = "measurements/P04_meas_testkjoring_05.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -93,9 +93,12 @@ if not online:
     PowerB = []         # berenging av motorpådrag B
 
     Avvik = []
-
+    Ts = []
     IAEliste = []
     MAEliste = []
+
+    Tva = []
+    Tvb = []
 
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
@@ -135,10 +138,14 @@ else:
     joy3 = []
 
     # egne variable
+    Ts = []
+    MAEliste = []
+    IAEliste = []
     Avvikt = []
     PowerA = []
     PowerB = []
-    
+    Tva = []
+    Tvb = []
     
     print("D) online: LISTS FOR DATA TO PLOT INITIALIZED.")
     #---------------------------------------------------------------------
@@ -162,18 +169,17 @@ else:
 # Det er viktig å spesifisere riktig datatype og kolonne.
 def unpackMeasurement(rowOfMeasurement):
     Tid.append(float(rowOfMeasurement[0]))
-    Lys.append(int(rowOfMeasurement[1]))
+    Lys.append(float(rowOfMeasurement[1]))
    
-
-    VinkelPosMotorA.append(float(rowOfMeasurement[2]))
-    HastighetMotorA.append(float(rowOfMeasurement[3]))
-    VinkelPosMotorB.append(float(rowOfMeasurement[4]))
-    HastighetMotorB.append(float(rowOfMeasurement[5]))
+    # VinkelPosMotorA.append(float(rowOfMeasurement[2]))
+    # HastighetMotorA.append(float(rowOfMeasurement[3]))
+    # VinkelPosMotorB.append(float(rowOfMeasurement[4]))
+    # HastighetMotorB.append(float(rowOfMeasurement[5]))
     
     # i malen her mangler mange målinger, fyll ut selv det du trenger
         
-    joyForward.append(float(rowOfMeasurement[6]))
-    joySide.append(int(rowOfMeasurement[7]))
+    joyForward.append(float(rowOfMeasurement[2]))
+    joySide.append(float(rowOfMeasurement[3]))
     # i malen her mangler mange målinger, fyll ut selv det du trenger
 
 #-------------------------------------------------------------
@@ -194,12 +200,12 @@ def unpackData(rowOfData):
     # målinger
     Tid.append(rowOfData["Tid"])
     Lys.append(rowOfData["Lys"])
-    HastighetMotorA.append(rowOfData["HastighetMotorA"])
-    VinkelPosMotorA.append(rowOfData["VinkelPosMotorA"])
-    HastighetMotorB.append(rowOfData["HastighetMotorB"])
-    VinkelPosMotorB.append(rowOfData["VinkelPosMotorB"])
+    # VinkelPosMotorA.append(rowOfData["VinkelPosMotorA"])
+    # HastighetMotorA.append(rowOfData["HastighetMotorA"])
+    # VinkelPosMotorB.append(rowOfData["VinkelPosMotorB"])
+    # HastighetMotorB.append(rowOfData["HastighetMotorB"])
     joyForward.append(rowOfData["joyForward"])
-    joySide.append(rowOfData["joySide"])
+    # joySide.append(rowOfData["joySide"])
 
     # egne variable
     PowerA.append(rowOfData["PowerA"])
@@ -207,6 +213,9 @@ def unpackData(rowOfData):
     Avvik.append(rowOfData["Avvik"])
     IAEliste.append(rowOfData["IAEliste"])
     MAEliste.append(rowOfData["IAEliste"])
+    Tva.append(rowOfData["Tva"])
+    Tvb.append(rowOfData["Tvb"])
+    
 
     
    
@@ -223,7 +232,7 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=2, ncols=3, sharex=True)
+fig, ax = plt.subplots(nrows=3, ncols=2, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
@@ -233,7 +242,7 @@ def figureTitles():
     ax[0,1].set_title('Avvik')
     ax[1,0].set_title('PowerA og Power B')
     ax[1,1].set_title('IAE')
-    ax[2,0].set_title('joyForward')
+    ax[2,0].set_title('TVa og TVb')
     ax[2,1].set_title('MAE')
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
@@ -246,12 +255,14 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
     ax[0,0].plot(Tid[0:], Lys[0:], 'b')
-    ax[0,1].plot(Tid[0:], Avvik[0:], 'b')
+    ax[0,1].plot(Tid[1:], Avvik[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerA[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerB[0:], 'r')
-    ax[1,1].plot(Tid[0:], IAEliste[0:], 'b')
-    ax[2,0].plot(Tid[0:], joyForward[0:], 'b')
-    ax[2,1].plot(Tid[0:], MAEliste[0:], 'b')
+    ax[1,1].plot(Tid[1:], IAEliste[0:], 'b')
+    ax[2,0].plot(Tid[1:], Tva[0:], 'b')
+    ax[2,0].plot(Tid[1:], Tvb[0:], 'r')
+
+    ax[2,1].plot(Tid[1:], MAEliste[0:], 'b')
 #---------------------------------------------------------------------
 
 
@@ -294,7 +305,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Tid, Lys, Avvik, IAEliste, MAEliste, PowerA, PowerB, joyForward, joySide)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
