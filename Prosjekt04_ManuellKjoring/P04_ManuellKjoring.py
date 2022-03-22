@@ -407,53 +407,47 @@ def main():
 #   - seksjonene H) og 12) for offline bruk
 
 def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb):
-    if Lys[-1] < 60: #Stopper bilen når den treffer hvitt.
-        # Parametre
-        a = 0.5
-        b = 0.35
+    
+    # Parametre
+    a = 0.5
+    b = 0.35
+    referanse = Lys[0]
+    MAEsum = 0
+    
+
+    if len(Tid) == 1:
         referanse = Lys[0]
-        MAEsum = 0
-        TvaSum = 0
-        TvbSum = 0
+        Avvik.append(0)
+        Ts.append(0)
+        IAEliste.append(0)
+        MAEliste.append(0)     
+        Tva.append(0)
+        Tvb.append(0)   
+        PowerA.append(joyForward[-1]*a + joySide[-1]*b)
+        PowerB.append(joyForward[-1]*a - joySide[-1]*b)    
+    else:
+        Avvik.append(referanse - Lys[-1])
+        Ts.append(Tid[-1] - Tid[-2])
 
-        if len(Tid) == 1:
-            referanse = Lys[0]
-            Avvik.append(0)
-            Ts.append(0)
-            IAEliste.append(0)
-            MAEliste.append(0)     
-            Tva.append(0)
-            Tvb.append(0)   
-            PowerA.append(joyForward[-1]*a + joySide[-1]*b)
-            PowerB.append(joyForward[-1]*a - joySide[-1]*b)    
-        else:
-            Avvik.append(referanse - Lys[-1])
-            Ts.append(Tid[-1] - Tid[-2])
-
-            EulerForward(IAEliste, Avvik, Ts)
+        EulerForward(IAEliste, Avvik, Ts)
+    
+        n = len(Tid)
+        for i in range(n):
+            MAEsum += abs(Avvik[i])
             
 
-
-            n = len(Tid)
-            for i in range(n):
-                MAEsum += abs(Avvik[i])
-                
-                # TvaSum += abs(PowerA[i+1] - PowerA[i])
-                # TvbSum += abs(PowerB[i+1] - PowerB[i])
-
-            MAEliste.append((1/(n+1)) * MAEsum)
-
-
+        MAEliste.append((1/(n+1)) * MAEsum)
+        if Lys[-1] < 60: #Stopper bilen når den treffer hvitt.
             PowerA.append(joyForward[-1]*a + joySide[-1]*b)
             PowerB.append(joyForward[-1]*a - joySide[-1]*b)
+        else:
+            PowerA.append(0)
+            PowerB.append(0)
 
-            Tva.append(Tva[-1] + abs(PowerA[-1] - PowerA[-2]))
-            Tvb.append(Tva[-1] + abs(PowerB[-1] - PowerB[-2]))
+        Tva.append(Tva[-1] + abs(PowerA[-1] - PowerA[-2]))
+        Tvb.append(Tva[-1] + abs(PowerB[-1] - PowerB[-2]))
         
-    else:
-        PowerA.append(0)
-        PowerB.append(0)
-    
+        
 
 #---------------------------------------------------------------------
 
