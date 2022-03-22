@@ -124,7 +124,7 @@ def main():
         #  --> C) offline: OWN VARIABLES. INITIALIZE LISTS
         # i plottefilen. 
 
-        AlfaVerdi = 0.3
+        AlfaVerdi = 0.2
         
         FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
         

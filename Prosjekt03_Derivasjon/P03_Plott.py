@@ -19,17 +19,17 @@ except Exception as e:
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #     A) online and offline: SET ONLINE FLAG, IP-ADRESSE OG FILENAME
 #
-online = True
+online = False
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.143.82"
+EV3_IP = "169.254.32.30"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "P03_meas_01.txt"
+filenameMeas = "measurments/P03_meas_8.41.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -77,7 +77,16 @@ if not online:
     # offline.
     
  
+    AlfaVerdi = 0.05
+        
+    FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
+    
+    RawFart = []           #Deriverte        
+    Fart = []       
+    FiltrertFart = []
 
+    UfiltrertAkselerasjon = [] 
+    FiltrertAkselerasjon = [] 
 
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
@@ -107,7 +116,7 @@ else:
     
     
     # egne variable
-    AlfaVerdi = 0.2
+    AlfaVerdi = 0.05
         
     FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
     
@@ -170,9 +179,9 @@ def unpackData(rowOfData):
     FiltrertAvstand.append(rowOfData["FiltrertAvstand"])
     #RawFart.append(rowOfData["RawFart"])
     Fart.append(rowOfData["Fart"])
-    FiltrertFart.append(rowOfData["FiltrertFart"])
+    #FiltrertFart.append(rowOfData["FiltrertFart"])
     UfiltrertAkselerasjon.append(rowOfData["UfiltrertAkselerasjon"])
-    FiltrertAkselerasjon.append(rowOfData["FiltrertAkselerasjon"])
+    #FiltrertAkselerasjon.append(rowOfData["FiltrertAkselerasjon"])
     
     
                 
@@ -214,13 +223,13 @@ def figureTitles():
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
 
-    ax[0].plot(Tid[0:], UfiltrertAvstand[0:], 'b')
+    #ax[0].plot(Tid[0:], UfiltrertAvstand[0:], 'b')
     ax[0].plot(Tid[0:], FiltrertAvstand[0:], 'r')
     #ax[2].plot(Tid[0:], RawFart[0:], 'b')
     ax[1].plot(Tid[0:], Fart[0:], 'b')
-    ax[1].plot(Tid[0:], FiltrertFart[0:], 'r')
-    ax[2].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'b')
-    ax[2].plot(Tid[0:], FiltrertAkselerasjon[0:], 'r')
+    #ax[1].plot(Tid[0:], FiltrertFart[0:], 'r')
+    ax[2].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'g')
+    #ax[2].plot(Tid[0:], FiltrertAkselerasjon[0:], 'r')
  
     
    
@@ -297,7 +306,8 @@ def offline(filenameMeas, filenameCalcOffline):
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                    CalculatedToFile += str(RawFart[i]) + ","
+                    CalculatedToFile += str(FiltrertAvstand[i]) + ","
+                    CalculatedToFile += str(Fart[i]) + "\n"
                     f.write(CalculatedToFile)
         #---------------------------------------------------------
 
