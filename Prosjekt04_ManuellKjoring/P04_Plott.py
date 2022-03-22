@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 # coding=utf-8
+
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -28,7 +30,7 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P04_meas_testkjoring_06.txt"
+filenameMeas = "measurements/P04_meas_mattis_02.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
