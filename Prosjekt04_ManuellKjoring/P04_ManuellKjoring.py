@@ -146,6 +146,7 @@ def main():
         Ts = []
 
         Avvik = []          #avvik = referanse måling - lys(k)
+        abs_Avvik = []
 
         IAEliste = []
         MAEliste = []
@@ -247,7 +248,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -406,18 +407,19 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb):
+def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb):
     
     # Parametre
     a = 0.5
     b = 0.35
     referanse = Lys[0]
     MAEsum = 0
-    
+  
 
     if len(Tid) == 1:
         referanse = Lys[0]
         Avvik.append(0)
+        abs_Avvik.append(0)
         Ts.append(0)
         IAEliste.append(0)
         MAEliste.append(0)     
@@ -428,9 +430,15 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, I
     else:
         Avvik.append(referanse - Lys[-1])
         Ts.append(Tid[-1] - Tid[-2])
+        
+        if Avvik[-1] < 0:
+            abs_Avvik.append(-Avvik[-1])
+            
+        else:
+            abs_Avvik.append(Avvik[-1])
 
-        EulerForward(IAEliste, Avvik, Ts)
-    
+        EulerForward(IAEliste, abs_Avvik, Ts)
+
         n = len(Tid)
         for i in range(n):
             MAEsum += abs(Avvik[i])

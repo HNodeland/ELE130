@@ -95,6 +95,7 @@ if not online:
     PowerB = []         # berenging av motorpådrag B
 
     Avvik = []
+    abs_Avvik = []
     Ts = []
     IAEliste = []
     MAEliste = []
@@ -144,6 +145,7 @@ else:
     MAEliste = []
     IAEliste = []
     Avvikt = []
+    abs_Avvik = []
     PowerA = []
     PowerB = []
     Tva = []
@@ -213,6 +215,7 @@ def unpackData(rowOfData):
     PowerA.append(rowOfData["PowerA"])
     PowerB.append(rowOfData["PowerB"])
     Avvik.append(rowOfData["Avvik"])
+    abs_Avvik.append(rowOfData["abs_Avvik"])
     IAEliste.append(rowOfData["IAEliste"])
     MAEliste.append(rowOfData["IAEliste"])
     Tva.append(rowOfData["Tva"])
@@ -306,7 +309,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, IAEliste, MAEliste, Tva, Tvb)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
