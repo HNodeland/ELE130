@@ -149,7 +149,7 @@ def main():
 
         Integrert_Avvik = []
         Filtrert_Avvik = []
-        Alfa_Verdi = 0.2
+        Alfa_Verdi = 0.1
         Filtrert_Avvik_Derivert = []
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
         # ------------------------------------------------------------
@@ -348,6 +348,10 @@ def main():
             if config.joyMainSwitch:
                 print("joyMainSwitch er satt til 1")
                 break
+            if Lys[-1] > 60: #Stopper bilen når den treffer hvitt.
+                motorA.stop()
+                motorB.stop()
+                break
 
             # Teller opp k
             k += 1
@@ -401,11 +405,11 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
     referanse = Lys[0]
     MAEsum = 0
   
-    Fart = 14
+    Fart = 30
     
-    K_p = 4.20
-    K_i = 0.1
-    K_d = 0
+    K_p = 1.5
+    K_i = 0.5
+    K_d = 0.2
 
 
 
@@ -448,13 +452,13 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
         iir_filtration(Tid, Avvik, Filtrert_Avvik, Alfa_Verdi)
         derivasjon(Tid, Filtrert_Avvik, Filtrert_Avvik_Derivert)
 
-        if Integrert_Avvik[-1] > 95:
-            Integrert_Avvik[-1] = 95
+        if Integrert_Avvik[-1] > 0.5:
+            Integrert_Avvik[-1] = 0.5
 
-        elif Integrert_Avvik[-1] < -95:
-            Integrert_Avvik[-1] = -95
+        elif Integrert_Avvik[-1] < -0.5:
+            Integrert_Avvik[-1] = -0.5
 
-        PadragA = Fart - K_p*Avvik[-1] - K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
+        PadragA = Fart - K_p*Avvik[-1] - K_i*Integrert_Avvik[-1] - K_d*Filtrert_Avvik_Derivert[-1]
         PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
 
         if Lys[-1] < 60: #Stopper bilen når den treffer hvitt.
@@ -465,6 +469,7 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
         else:
             PowerA.append(0)
             PowerB.append(0)
+            
         
         Tva.append(Tva[-1] + abs(PowerA[-1] - PowerA[-2]))
         Tvb.append(Tvb[-1] + abs(PowerB[-1] - PowerB[-2]))

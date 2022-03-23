@@ -30,7 +30,7 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P05_meas_01.txt"
+filenameMeas = "measurements/P05_meas_04.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -94,6 +94,10 @@ if not online:
 
     Tva = []
     Tvb = []
+    Integrert_Avvik = []
+    Filtrert_Avvik = []
+    Filtrert_Avvik_Derivert = []
+    Alfa_Verdi = 0.1
 
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
@@ -135,6 +139,10 @@ else:
     PowerB = []
     Tva = []
     Tvb = []
+    Integrert_Avvik = []
+    Filtrert_Avvik = []
+    Filtrert_Avvik_Derivert = []
+    Alfa_Verdi = 0.1
     
     print("D) online: LISTS FOR DATA TO PLOT INITIALIZED.")
     #---------------------------------------------------------------------
@@ -291,7 +299,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
