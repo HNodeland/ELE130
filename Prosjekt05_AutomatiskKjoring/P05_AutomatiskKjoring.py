@@ -26,6 +26,7 @@ try:
     import styrestikke.config
 except Exception as e:
     pass  # for å kunne eksportere funksjoner
+
 import struct
 import socket
 import json
@@ -41,13 +42,13 @@ from funksjoner import EulerForward, iir_filtration, fir_filtration, derivasjon
 wired = False
 
 # --> Filnavn for lagring av MÅLINGER som gjøres online
-filenameMeas = "P04_meas_01.txt"
+filenameMeas = "P05_meas_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres online
 #     Typisk navn:  "CalcOnline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOnline = ".txt"
-filenameCalcOnline = "P04_calcOnline_01.txt"
+filenameCalcOnline = "P05_calcOnline_01.txt"
 # --------------------------------------------------------------------
 
 
@@ -107,15 +108,7 @@ def main():
         VinkelPosMotorA = []    # vinkelposisjon motor A
         HastighetMotorA = []    # hastighet motor A
         VinkelPosMotorB = []    # vinkelposisjon motor B 
-        HastighetMotorB = []    # hastighet motor B
-       
-        joyForward = []         # måling av foroverbevegelse styrestikke
-        joySide = []            # måling av sidebevegelse styrestikke
-        
-        joy1 = []               # måling av knapp 1 (skyteknappen)
-        joy2 = []               # måling av knapp 2 (ved tommel)
-        joy3 = []               # måling av knapp 3 
-      
+        HastighetMotorB = []    # hastighet motor B    
 
         print("3) MEASUREMENTS. LISTS INITIALIZED.")
         # ------------------------------------------------------------
@@ -153,6 +146,11 @@ def main():
        
         Tva = []
         Tvb = []
+
+        Integrert_Avvik = []
+        Filtrert_Avvik = []
+        Alfa_Verdi = 0.2
+        Filtrert_Avvik_Derivert = []
         print("4) OWN VARIABLES. LISTS INITIALIZED.")
         # ------------------------------------------------------------
 
@@ -186,12 +184,6 @@ def main():
             VinkelPosMotorB.append(motorB.angle())
             HastighetMotorB.append(motorB.speed())
            
-            joyForward.append(config.joyForwardInstance)
-            joySide.append(config.joySideInstance)
-          
-            joy1.append(config.joy1Instance)
-            joy2.append(config.joy2Instance)
-            joy3.append(config.joy3Instance)
           
             # --------------------------------------------------------
 
@@ -216,21 +208,19 @@ def main():
             # Husk at siste element i strengen må være '\n'
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
-                MeasurementToFileHeader += "0=Tid, 1=Lys, 2=joyForward, 3=joySide\n" #2=VinkelPosMotorA, 3=HastighetMotorA \n"
-                #MeasurementToFileHeader += "4=VinkelPosMotorB, 5=HastighetMotorB, 6=joyForward, 7=JoySide \n"                
+                MeasurementToFileHeader += "0=Tid, 1=Lys\n"                
                 robot["measurements"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Lys[-1]) + ","
+            MeasurementToFile += str(Lys[-1]) + "\n"
            
             # MeasurementToFile += str(VinkelPosMotorA[-1]) + ","
             # MeasurementToFile += str(HastighetMotorA[-1]) + ","
             # MeasurementToFile += str(VinkelPosMotorB[-1]) + ","
             # MeasurementToFile += str(HastighetMotorB[-1]) + ","
            
-            MeasurementToFile += str(joyForward[-1]) + ","
-            MeasurementToFile += str(joySide[-1]) + "\n"          
+              
 
             # Skriv MeasurementToFile til .txt-filen navngitt øverst
             robot["measurements"].write(MeasurementToFile)
@@ -248,7 +238,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -330,14 +320,11 @@ def main():
                 DataToOnlinePlot["VinkelPosMotorA"] = (VinkelPosMotorA[-1])
                 DataToOnlinePlot["HastighetMotorB"] = (HastighetMotorB[-1])
                 DataToOnlinePlot["VinkelPosMotorB"] = (VinkelPosMotorB[-1])
-                DataToOnlinePlot["joyForward"] = (joyForward[-1])
-                DataToOnlinePlot["joySide"] = (joySide[-1])
+    
 
                 # egne variable
                 DataToOnlinePlot["PowerA"] = (PowerA[-1])
                 DataToOnlinePlot["PowerB"] = (PowerB[-1])
-
-                
 
                 DataToOnlinePlot["Avvik"] = (Avvik[-1])
                 DataToOnlinePlot["IAEliste"] = (IAEliste[-1])
@@ -407,14 +394,20 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb):
+def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi):
     
     # Parametre
-    a = 0.5
-    b = 0.35
+    
     referanse = Lys[0]
     MAEsum = 0
   
+    Fart = 14
+    
+    K_p = 4.20
+    K_i = 0.1
+    K_d = 0
+
+
 
     if len(Tid) == 1:
         referanse = Lys[0]
@@ -424,9 +417,14 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, a
         IAEliste.append(0)
         MAEliste.append(0)     
         Tva.append(0)
-        Tvb.append(0)   
-        PowerA.append(joyForward[-1]*a + joySide[-1]*b)
-        PowerB.append(joyForward[-1]*a - joySide[-1]*b)    
+        Tvb.append(0)
+        Integrert_Avvik.append(0)
+        Filtrert_Avvik.append(Avvik[0])
+        Filtrert_Avvik_Derivert.append(0)
+
+
+        PowerA.append(Fart)
+        PowerB.append(Fart)
     else:
         Avvik.append(referanse - Lys[-1])
         Ts.append(Tid[-1] - Tid[-2])
@@ -438,15 +436,32 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, a
             abs_Avvik.append(Avvik[-1])
 
         EulerForward(IAEliste, abs_Avvik, Ts)
-
+        
         n = len(Tid)
         for i in range(n):
             MAEsum += abs(Avvik[i])
         
         MAEliste.append((1/(n+1)) * MAEsum)
+
+        EulerForward(Integrert_Avvik,Avvik, Ts)
+
+        iir_filtration(Tid, Avvik, Filtrert_Avvik, Alfa_Verdi)
+        derivasjon(Tid, Filtrert_Avvik, Filtrert_Avvik_Derivert)
+
+        if Integrert_Avvik[-1] > 95:
+            Integrert_Avvik[-1] = 95
+
+        elif Integrert_Avvik[-1] < -95:
+            Integrert_Avvik[-1] = -95
+
+        PadragA = Fart - K_p*Avvik[-1] - K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
+        PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
+
         if Lys[-1] < 60: #Stopper bilen når den treffer hvitt.
-            PowerA.append(joyForward[-1]*a + joySide[-1]*b)
-            PowerB.append(joyForward[-1]*a - joySide[-1]*b)
+            # PowerA.append(Fart*a + Sving*b)
+            # PowerB.append(Fart*a - Sving*b)
+            PowerA.append(PadragA)
+            PowerB.append(PadragB)
         else:
             PowerA.append(0)
             PowerB.append(0)

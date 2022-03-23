@@ -11,7 +11,7 @@ try:
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ----> Husk å oppdatere denne !!!!!!!!!!!!!!
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    from P04_ManuellKjoring import MathCalculations
+    from P05_AutomatiskKjoring import MathCalculations
 except Exception as e:
     pass
     # print(e)
@@ -30,13 +30,13 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P04_meas_mattis_02.txt"
+filenameMeas = "measurements/P05_meas_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOffline = ".txt"
-filenameCalcOffline = "P04_calcOffline_01.txt"
+filenameCalcOffline = "P05_calcOffline_01.txt"
 #---------------------------------------------------------------------
 
 
@@ -63,14 +63,6 @@ if not online:
     VinkelPosMotorB = []    # vinkelposisjon motor B 
     HastighetMotorB = []    # hastighet motor B
    
-    joyForward = []         # måling av foroverbevegelse styrestikke
-    joySide = []            # måling av sidebevegelse styrestikke
-   
-    joy1 = []               # måling av knapp 1 (skyteknappen)
-    joy2 = []               # måling av knapp 2 (ved tommel)
-    joy3 = []               # måling av knapp 3 
-   
-    
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
     #---------------------------------------------------------------------
 
@@ -133,13 +125,6 @@ else:
     VinkelPostMotorB = []
     HastighetMotorB = []
     
-    joyForward = []
-    joySide = []
-
-    joy1 = []
-    joy2 = []
-    joy3 = []
-
     # egne variable
     Ts = []
     MAEliste = []
@@ -182,8 +167,7 @@ def unpackMeasurement(rowOfMeasurement):
     
     # i malen her mangler mange målinger, fyll ut selv det du trenger
         
-    joyForward.append(float(rowOfMeasurement[2]))
-    joySide.append(float(rowOfMeasurement[3]))
+ 
     # i malen her mangler mange målinger, fyll ut selv det du trenger
 
 #-------------------------------------------------------------
@@ -208,8 +192,6 @@ def unpackData(rowOfData):
     # HastighetMotorA.append(rowOfData["HastighetMotorA"])
     # VinkelPosMotorB.append(rowOfData["VinkelPosMotorB"])
     # HastighetMotorB.append(rowOfData["HastighetMotorB"])
-    joyForward.append(rowOfData["joyForward"])
-    # joySide.append(rowOfData["joySide"])
 
     # egne variable
     PowerA.append(rowOfData["PowerA"])
@@ -309,7 +291,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
@@ -332,15 +314,15 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0=JoyForward, 1=PowerA, \n"
-                CalculatedToFileHeader += "2=PowerB \n"
+                CalculatedToFileHeader += "0=PowerA, "
+                CalculatedToFileHeader += "1=PowerB \n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                    CalculatedToFile += str(joyForward[i]) + ","
+      
                     CalculatedToFile += str(PowerA[i]) + ","
                     CalculatedToFile += str(PowerB[i]) + "\n"
                     
