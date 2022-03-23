@@ -1,0 +1,3 @@
+Traceback (most recent call last):
+  File "/home/robot/Prosjekt05_AutomatiskKjoring/P05_AutomatiskKjoring.py", line 29, in <module>
+ImportError: cannot import name Integral
