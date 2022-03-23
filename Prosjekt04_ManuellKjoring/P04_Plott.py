@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
-
+import statistics
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import socket
@@ -30,7 +30,7 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P04_meas_william_01.txt"
+filenameMeas = "measurements/P04_meas_mattis_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -217,7 +217,7 @@ def unpackData(rowOfData):
     Avvik.append(rowOfData["Avvik"])
     abs_Avvik.append(rowOfData["abs_Avvik"])
     IAEliste.append(rowOfData["IAEliste"])
-    MAEliste.append(rowOfData["IAEliste"])
+    MAEliste.append(rowOfData["MAEliste"])
     Tva.append(rowOfData["Tva"])
     Tvb.append(rowOfData["Tvb"])
     
@@ -249,7 +249,7 @@ def figureTitles():
     ax[1,1].set_title('IAE')
     ax[2,0].set_title('TVa og TVb')
     ax[2,1].set_title('MAE')
-    # Vær obs på at ALLE delfigurene må inneholde data. 
+    # # Vær obs på at ALLE delfigurene må inneholde data. 
 
     ax[2,0].set_xlabel('Tid [sec]')
     ax[2,1].set_xlabel('Tid [sec]')
@@ -259,6 +259,8 @@ def figureTitles():
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
+    # ax.set_ylim([0, 50])
+    # ax.hist(Lys[0:],100, range=[10, 50])
     ax[0,0].plot(Tid[0:], Lys[0:], 'b')
     ax[0,1].plot(Tid[0:], Avvik[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerA[0:], 'b')
@@ -332,8 +334,8 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0=JoyForward, 1=PowerA, \n"
-                CalculatedToFileHeader += "2=PowerB \n"
+                CalculatedToFileHeader += "0=JoyForward, 1=PowerA, 2=PowerB, 3=IAE, 4=Mae \n"
+                CalculatedToFileHeader += "6=Tva, 7=Tvb \n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
@@ -342,12 +344,23 @@ def offline(filenameMeas, filenameCalcOffline):
                     CalculatedToFile = ""
                     CalculatedToFile += str(joyForward[i]) + ","
                     CalculatedToFile += str(PowerA[i]) + ","
-                    CalculatedToFile += str(PowerB[i]) + "\n"
+                    CalculatedToFile += str(PowerB[i]) + ","
+                    CalculatedToFile += str(IAEliste[i]) + ","
+                    CalculatedToFile += str(MAEliste[i]) + ","
+                    CalculatedToFile += str(Tva[i]) + ","
+                    CalculatedToFile += str(Tvb[i]) + "\n"
                     
                     f.write(CalculatedToFile)
         #---------------------------------------------------------
 
+
+
     # Plot data (målinger og beregnede verdier) fra listene.
+    print(statistics.pstdev(Lys))
+    print(statistics.mean(Lys))
+    print(statistics.mean(Ts))
+    
+    
     figureTitles()
     plotData()
     stopPlot()
@@ -435,3 +448,5 @@ if online:
 else:
     # If offline, plot from file defined by filename.
     offline(filenameMeas,filenameCalcOffline)
+
+
