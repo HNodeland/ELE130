@@ -453,7 +453,7 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, a
             PowerB.append(0)
 
         Tva.append(Tva[-1] + abs(PowerA[-1] - PowerA[-2]))
-        Tvb.append(Tva[-1] + abs(PowerB[-1] - PowerB[-2]))
+        Tvb.append(Tvb[-1] + abs(PowerB[-1] - PowerB[-2]))
         
         
 
