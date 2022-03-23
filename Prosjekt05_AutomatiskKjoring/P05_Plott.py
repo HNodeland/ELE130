@@ -1,16 +1,17 @@
+#!/usr/bin/env python3
 # coding=utf-8
+
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import socket
 import sys
 import json
-from funksjoner import derivasjon, iir_filtration
 try:
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ----> Husk å oppdatere denne !!!!!!!!!!!!!!
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    from P03_Derivasjon import MathCalculations
+    from P04_ManuellKjoring import MathCalculations
 except Exception as e:
     pass
     # print(e)
@@ -22,20 +23,20 @@ except Exception as e:
 online = False
 
 # Hvis online = True, pass på at IP-adresse er satt riktig.
-EV3_IP = "169.254.32.30"
+EV3_IP = "169.254.200.246"
 
 # Hvis online = False, husk å overføre filen med målinger og 
 # eventuelt filen med beregnede variable fra EV3 til datamaskinen.
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurments/P03_meas_8.42.txt"
+filenameMeas = "measurements/P04_meas_mattis_02.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOffline = ".txt"
-filenameCalcOffline = "P03_calcOffline_01.txt"
+filenameCalcOffline = "P04_calcOffline_01.txt"
 #---------------------------------------------------------------------
 
 
@@ -54,8 +55,21 @@ if not online:
     # i hovedfilen. 
     
     Tid = []                # registring av tidspunkt for målinger
-    UfiltrertAvstand = []                # måling av reflektert lys fra ColorSensor
-     
+    Lys = []                # måling av reflektert lys fra ColorSensor
+  
+
+    VinkelPosMotorA = []    # vinkelposisjon motor A
+    HastighetMotorA = []    # hastighet motor A
+    VinkelPosMotorB = []    # vinkelposisjon motor B 
+    HastighetMotorB = []    # hastighet motor B
+   
+    joyForward = []         # måling av foroverbevegelse styrestikke
+    joySide = []            # måling av sidebevegelse styrestikke
+   
+    joy1 = []               # måling av knapp 1 (skyteknappen)
+    joy2 = []               # måling av knapp 2 (ved tommel)
+    joy3 = []               # måling av knapp 3 
+   
     
     print("B) offline: MEASUREMENTS. LISTS INTITALIZED.")
     #---------------------------------------------------------------------
@@ -76,17 +90,18 @@ if not online:
     # EGNE VARIABLE her i denne seksjonen når du kjører prosjektet
     # offline.
     
- 
-    AlfaVerdi = 0.05
-        
-    FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
     
-    RawFart = []           #Deriverte        
-    Fart = []       
-    FiltrertFart = []
+    PowerA = []         # berenging av motorpådrag A
+    PowerB = []         # berenging av motorpådrag B
 
-    UfiltrertAkselerasjon = [] 
-    FiltrertAkselerasjon = [] 
+    Avvik = []
+    abs_Avvik = []
+    Ts = []
+    IAEliste = []
+    MAEliste = []
+
+    Tva = []
+    Tvb = []
 
     
     print("C) offline: OWN VARIABLES. LISTS INITIALIZED.")
@@ -112,22 +127,29 @@ else:
     
     # målinger
     Tid = []
-    UfiltrertAvstand = []
+    Lys = []
+    VinkelPosMotorA = []
+    HastighetMotorA = []
+    VinkelPostMotorB = []
+    HastighetMotorB = []
     
-    
+    joyForward = []
+    joySide = []
+
+    joy1 = []
+    joy2 = []
+    joy3 = []
+
     # egne variable
-    AlfaVerdi = 0.05
-        
-    FiltrertAvstand = []    #Verdier som blir brukt for å lage iir_Fart
-    
-    RawFart = []           #Deriverte        
-    Fart = []       
-    FiltrertFart = []
-
-    UfiltrertAkselerasjon = [] 
-    FiltrertAkselerasjon = [] 
-
-
+    Ts = []
+    MAEliste = []
+    IAEliste = []
+    Avvikt = []
+    abs_Avvik = []
+    PowerA = []
+    PowerB = []
+    Tva = []
+    Tvb = []
     
     print("D) online: LISTS FOR DATA TO PLOT INITIALIZED.")
     #---------------------------------------------------------------------
@@ -151,7 +173,19 @@ else:
 # Det er viktig å spesifisere riktig datatype og kolonne.
 def unpackMeasurement(rowOfMeasurement):
     Tid.append(float(rowOfMeasurement[0]))
-    UfiltrertAvstand.append(int(rowOfMeasurement[1]))
+    Lys.append(float(rowOfMeasurement[1]))
+   
+    # VinkelPosMotorA.append(float(rowOfMeasurement[2]))
+    # HastighetMotorA.append(float(rowOfMeasurement[3]))
+    # VinkelPosMotorB.append(float(rowOfMeasurement[4]))
+    # HastighetMotorB.append(float(rowOfMeasurement[5]))
+    
+    # i malen her mangler mange målinger, fyll ut selv det du trenger
+        
+    joyForward.append(float(rowOfMeasurement[2]))
+    joySide.append(float(rowOfMeasurement[3]))
+    # i malen her mangler mange målinger, fyll ut selv det du trenger
+
 #-------------------------------------------------------------
 
 
@@ -169,21 +203,27 @@ def unpackData(rowOfData):
 
     # målinger
     Tid.append(rowOfData["Tid"])
-    UfiltrertAvstand.append(rowOfData["UfiltrertAvstand"])
-    
+    Lys.append(rowOfData["Lys"])
+    # VinkelPosMotorA.append(rowOfData["VinkelPosMotorA"])
+    # HastighetMotorA.append(rowOfData["HastighetMotorA"])
+    # VinkelPosMotorB.append(rowOfData["VinkelPosMotorB"])
+    # HastighetMotorB.append(rowOfData["HastighetMotorB"])
+    joyForward.append(rowOfData["joyForward"])
+    # joySide.append(rowOfData["joySide"])
 
     # egne variable
+    PowerA.append(rowOfData["PowerA"])
+    PowerB.append(rowOfData["PowerB"])
+    Avvik.append(rowOfData["Avvik"])
+    abs_Avvik.append(rowOfData["abs_Avvik"])
+    IAEliste.append(rowOfData["IAEliste"])
+    MAEliste.append(rowOfData["IAEliste"])
+    Tva.append(rowOfData["Tva"])
+    Tvb.append(rowOfData["Tvb"])
     
-  
+
     
-    FiltrertAvstand.append(rowOfData["FiltrertAvstand"])
-    #RawFart.append(rowOfData["RawFart"])
-    Fart.append(rowOfData["Fart"])
-    #FiltrertFart.append(rowOfData["FiltrertFart"])
-    UfiltrertAkselerasjon.append(rowOfData["UfiltrertAkselerasjon"])
-    #FiltrertAkselerasjon.append(rowOfData["FiltrertAkselerasjon"])
-    
-    
+   
                 
 #-------------------------------------------------------------
 
@@ -197,42 +237,36 @@ def unpackData(rowOfData):
 # eller ncols = 1, så gis ax 1 argument som ax[0], ax[1], osv.
 # Dersom både nrows > 1 og ncols > 1,  så må ax gis 2 argumenter 
 # som ax[0,0], ax[1,0], osv
-fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
+fig, ax = plt.subplots(nrows=3, ncols=2, sharex=True)
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
-  
-    ax[0].set_title('Avstand')
-    #ax[0].set_title('FiltrertAvstand')
-    #ax[2].set_title('RawFart')
-    ax[1].set_title('Fart')
-    #ax[1].set_title('FiltrertFart')
-    ax[2].set_title('Akselerasjon')
-   
-    
-
+    ax[0,0].set_title('Lys')
+    ax[0,1].set_title('Avvik')
+    ax[1,0].set_title('PowerA og Power B')
+    ax[1,1].set_title('IAE')
+    ax[2,0].set_title('TVa og TVb')
+    ax[2,1].set_title('MAE')
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
-    ax[2].set_xlabel('Tid [sec]')
-  
+    ax[2,0].set_xlabel('Tid [sec]')
+    ax[2,1].set_xlabel('Tid [sec]')
+    
 
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
-
-    #ax[0].plot(Tid[0:], UfiltrertAvstand[0:], 'b')
-    ax[0].plot(Tid[0:], FiltrertAvstand[0:], 'r')
-    #ax[2].plot(Tid[0:], RawFart[0:], 'b')
-    ax[1].plot(Tid[0:], Fart[0:], 'b')
-    #ax[1].plot(Tid[0:], FiltrertFart[0:], 'r')
-    ax[2].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'g')
-    #ax[2].plot(Tid[0:], FiltrertAkselerasjon[0:], 'r')
- 
-    
-   
+    ax[0,0].plot(Tid[0:], Lys[0:], 'b')
+    ax[0,1].plot(Tid[0:], Avvik[0:], 'b')
+    ax[1,0].plot(Tid[0:], PowerA[0:], 'b')
+    ax[1,0].plot(Tid[0:], PowerB[0:], 'r')
+    ax[1,1].plot(Tid[0:], IAEliste[0:], 'b')
+    ax[2,0].plot(Tid[0:], Tva[0:], 'b')
+    ax[2,0].plot(Tid[0:], Tvb[0:], 'r')
+    ax[2,1].plot(Tid[0:], MAEliste[0:], 'b')
 #---------------------------------------------------------------------
 
 
@@ -275,7 +309,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi)
+            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, joyForward, joySide, Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig
@@ -298,16 +332,18 @@ def offline(filenameMeas, filenameCalcOffline):
         if len(filenameCalcOffline)>4:
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
-                CalculatedToFileHeader += "0=Fart\n"
-           
+                CalculatedToFileHeader += "0=JoyForward, 1=PowerA, \n"
+                CalculatedToFileHeader += "2=PowerB \n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
                 # Husk at siste element i strengen må være '\n'            
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-                    CalculatedToFile += str(FiltrertAvstand[i]) + ","
-                    CalculatedToFile += str(Fart[i]) + "\n"
+                    CalculatedToFile += str(joyForward[i]) + ","
+                    CalculatedToFile += str(PowerA[i]) + ","
+                    CalculatedToFile += str(PowerB[i]) + "\n"
+                    
                     f.write(CalculatedToFile)
         #---------------------------------------------------------
 
