@@ -3,4 +3,4 @@ Meas 02 P = 3, I = 3, D = 0, Alfa = 0.1 FART = 30
 Meas 03 P = 3, I = 3, D = 0.2, Alfa = 0.1 FART = 30
 Meas 04 P = 3, I = 10, D = 0.2 Alfa = 0.1 FART = 30 
 Meas 05 P = 3, I = 3, D = 0.9 Alfa = 0.1 FART = 30 
-Meas 06 P = 8, I = 3, D = 0.2 Alfa = 0.1 FART = 30 
+Meas 06 P = 8, I = 3, D = 0.2 Alfa = 0.1 FART = 30 ,
