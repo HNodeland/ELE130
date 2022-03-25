@@ -458,11 +458,11 @@ def MathCalculations(Avstand, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, a
             Integrert_Avvik[-1] = -0.5
 
         PadragA = Fart - K_p*Avvik[-1] - K_i*Integrert_Avvik[-1] - K_d*Filtrert_Avvik_Derivert[-1]
-        PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
+        #PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
 
         
         PowerA.append(PadragA)
-        PowerB.append(PadragB)
+        PowerB.append(PadragA)
        
             
         
