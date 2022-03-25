@@ -405,10 +405,10 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
     referanse = Lys[0]
     MAEsum = 0
   
-    Fart = 10
+    Fart = 30
     
-    K_p = 2.1
-    K_i = 1.5
+    K_p = 3
+    K_i = 3
     K_d = 0.2
 
 
