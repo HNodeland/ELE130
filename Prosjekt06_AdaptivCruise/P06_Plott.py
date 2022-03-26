@@ -11,7 +11,7 @@ try:
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ----> Husk å oppdatere denne !!!!!!!!!!!!!!
     #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    from P05_AutomatiskKjoring import MathCalculations
+    from Prosjekt06_AdaptivCruise import MathCalculations
 except Exception as e:
     pass
     # print(e)
@@ -30,13 +30,13 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P05_meas_03slow.txt"
+filenameMeas = "measurements/P06_meas_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOffline = ".txt"
-filenameCalcOffline = "P05_calcOffline_01.txt"
+filenameCalcOffline = "P06_calcOffline_01.txt"
 #---------------------------------------------------------------------
 
 
@@ -55,7 +55,7 @@ if not online:
     # i hovedfilen. 
     
     Tid = []                # registring av tidspunkt for målinger
-    Lys = []                # måling av reflektert lys fra ColorSensor
+    Avstand = []                # måling av reflektert lys fra ColorSensor
   
 
     VinkelPosMotorA = []    # vinkelposisjon motor A
@@ -123,7 +123,7 @@ else:
     
     # målinger
     Tid = []
-    Lys = []
+    Avstand = []
     VinkelPosMotorA = []
     HastighetMotorA = []
     VinkelPostMotorB = []
@@ -166,7 +166,7 @@ else:
 # Det er viktig å spesifisere riktig datatype og kolonne.
 def unpackMeasurement(rowOfMeasurement):
     Tid.append(float(rowOfMeasurement[0]))
-    Lys.append(float(rowOfMeasurement[1]))
+    Avstand.append(float(rowOfMeasurement[1]))
    
     # VinkelPosMotorA.append(float(rowOfMeasurement[2]))
     # HastighetMotorA.append(float(rowOfMeasurement[3]))
@@ -195,7 +195,7 @@ def unpackData(rowOfData):
 
     # målinger
     Tid.append(rowOfData["Tid"])
-    Lys.append(rowOfData["Lys"])
+    Avstand.append(rowOfData["Lys"])
     # VinkelPosMotorA.append(rowOfData["VinkelPosMotorA"])
     # HastighetMotorA.append(rowOfData["HastighetMotorA"])
     # VinkelPosMotorB.append(rowOfData["VinkelPosMotorB"])
@@ -233,7 +233,7 @@ fig, ax = plt.subplots(nrows=3, ncols=2, sharex=True)
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
-    ax[0,0].set_title('Lys')
+    ax[0,0].set_title('Avstand')
     ax[0,1].set_title('Avvik')
     ax[1,0].set_title('PowerA og Power B')
     ax[1,1].set_title('IAE')
@@ -249,7 +249,7 @@ def figureTitles():
 # Vær obs på at ALLE delfigurene må inneholde data. 
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def plotData():
-    ax[0,0].plot(Tid[0:], Lys[0:], 'b')
+    ax[0,0].plot(Tid[0:], Avstand[0:], 'b')
     ax[0,1].plot(Tid[0:], Avvik[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerA[0:], 'b')
     ax[1,0].plot(Tid[0:], PowerB[0:], 'r')
@@ -299,7 +299,7 @@ def offline(filenameMeas, filenameCalcOffline):
             # beregnet pådrag til motor(ene), selv om pådraget 
             # kan beregnes og plottes.
 
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi)
+            MathCalculations(Avstand, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi)
             #---------------------------------------------------------
 
         # Eksperiment i offline er nå ferdig

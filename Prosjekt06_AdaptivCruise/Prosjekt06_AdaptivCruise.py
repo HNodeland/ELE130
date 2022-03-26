@@ -42,13 +42,13 @@ from funksjoner import EulerForward, iir_filtration, fir_filtration, derivasjon
 wired = False
 
 # --> Filnavn for lagring av MÅLINGER som gjøres online
-filenameMeas = "P05_meas_01.txt"
+filenameMeas = "P06_meas_01.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres online
 #     Typisk navn:  "CalcOnline_P0X_BeskrivendeTekst_Y.txt"
 #     Dersom du ikke vil lagre BEREGNEDE VARIABLE, la det stå 
 #     filenameCalcOnline = ".txt"
-filenameCalcOnline = "P05_calcOnline_01.txt"
+filenameCalcOnline = "P06_calcOnline_01.txt"
 # --------------------------------------------------------------------
 
 
@@ -68,7 +68,7 @@ def main():
         robot = Initialize(wired,filenameMeas,filenameCalcOnline)
 
         # oppdater portnummer
-        myColorSensor = ColorSensor(Port.S1)
+        myUltrasonicSensor = UltrasonicSensor(Port.S1)
        
 
         motorA = Motor(Port.A)
@@ -103,7 +103,8 @@ def main():
         #  --> 6) STORE MEASUREMENTS TO FILE
 
         Tid = []                # registring av tidspunkt for målinger
-        Lys = []                # måling av reflektert lys fra ColorSensor
+                      # måling av reflektert lys fra ColorSensor
+        Avstand = [] 
        
         VinkelPosMotorA = []    # vinkelposisjon motor A
         HastighetMotorA = []    # hastighet motor A
@@ -177,7 +178,8 @@ def main():
                 # måletidspunkt
                 Tid.append(perf_counter() - starttidspunkt)
 
-            Lys.append(myColorSensor.reflection())
+            
+            Avstand.append(myUltrasonicSensor.distance())
            
             VinkelPosMotorA.append(motorA.angle())
             HastighetMotorA.append(motorA.speed())
@@ -208,12 +210,12 @@ def main():
             # Husk at siste element i strengen må være '\n'
             if k == 0:
                 MeasurementToFileHeader = "Tall viser til kolonnenummer:\n"
-                MeasurementToFileHeader += "0=Tid, 1=Lys\n"                
+                MeasurementToFileHeader += "0=Tid, 1=Avstand\n"                
                 robot["measurements"].write(MeasurementToFileHeader)
 
             MeasurementToFile = ""
             MeasurementToFile += str(Tid[-1]) + ","
-            MeasurementToFile += str(Lys[-1]) + "\n"
+            MeasurementToFile += str(Avstand[-1]) + "\n"
            
             # MeasurementToFile += str(VinkelPosMotorA[-1]) + ","
             # MeasurementToFile += str(HastighetMotorA[-1]) + ","
@@ -238,7 +240,7 @@ def main():
             # fall kommentere bort kallet til MathCalculations()
             # nedenfor. Du må også kommentere bort motorpådragene. 
             
-            MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi)
+            MathCalculations(Avstand, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi)
 
             # Hvis motor(er) brukes i prosjektet så sendes til slutt
             # beregnet pådrag til motor(ene).
@@ -314,7 +316,7 @@ def main():
 
                 # målinger
                 DataToOnlinePlot["Tid"] = (Tid[-1])
-                DataToOnlinePlot["Lys"] = (Lys[-1])
+                DataToOnlinePlot["Avstand"] = (Avstand[-1])
                
                 DataToOnlinePlot["HastighetMotorA"] = (HastighetMotorA[-1])
                 DataToOnlinePlot["VinkelPosMotorA"] = (VinkelPosMotorA[-1])
@@ -348,10 +350,7 @@ def main():
             if config.joyMainSwitch:
                 print("joyMainSwitch er satt til 1")
                 break
-            if Lys[-1] > 60: #Stopper bilen når den treffer hvitt.
-                motorA.stop()
-                motorB.stop()
-                break
+            
 
             # Teller opp k
             k += 1
@@ -398,23 +397,23 @@ def main():
 # eller i seksjonene
 #   - seksjonene H) og 12) for offline bruk
 
-def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi):
+def MathCalculations(Avstand, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_Avvik, IAEliste, MAEliste, Tva, Tvb, Filtrert_Avvik, Filtrert_Avvik_Derivert, Alfa_Verdi):
     
     # Parametre
     
-    referanse = Lys[0]
+    referanse = Avstand[0]
     MAEsum = 0
   
-    Fart = 10
+    Fart = 30
     
-    K_p = 2.1
-    K_i = 1.5
-    K_d = 0.15
+    K_p = 1.5
+    K_i = 0.5
+    K_d = 0.2
 
 
 
     if len(Tid) == 1:
-        referanse = Lys[0]
+        referanse = Avstand[0]
         Avvik.append(0)
         abs_Avvik.append(0)
         Ts.append(0)
@@ -422,7 +421,6 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
         MAEliste.append(0)     
         Tva.append(0)
         Tvb.append(0)
-        
         Integrert_Avvik.append(0)
         Filtrert_Avvik.append(Avvik[0])
         Filtrert_Avvik_Derivert.append(0)
@@ -431,7 +429,7 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
         PowerA.append(Fart)
         PowerB.append(Fart)
     else:
-        Avvik.append(referanse - Lys[-1])
+        Avvik.append(referanse - Avstand[-1])
         Ts.append(Tid[-1] - Tid[-2])
         
         if Avvik[-1] < 0:
@@ -453,23 +451,19 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
         iir_filtration(Tid, Avvik, Filtrert_Avvik, Alfa_Verdi)
         derivasjon(Tid, Filtrert_Avvik, Filtrert_Avvik_Derivert)
 
-        if Integrert_Avvik[-1] > 20:
-            Integrert_Avvik[-1] = 20
+        if Integrert_Avvik[-1] > 0.5:
+            Integrert_Avvik[-1] = 0.5
 
-        elif Integrert_Avvik[-1] < -20:
-            Integrert_Avvik[-1] = -20
+        elif Integrert_Avvik[-1] < -0.5:
+            Integrert_Avvik[-1] = -0.5
 
         PadragA = Fart - K_p*Avvik[-1] - K_i*Integrert_Avvik[-1] - K_d*Filtrert_Avvik_Derivert[-1]
-        PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
+        #PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]
 
-        if Lys[-1] < 60: #Stopper bilen når den treffer hvitt.
-            # PowerA.append(Fart*a + Sving*b)
-            # PowerB.append(Fart*a - Sving*b)
-            PowerA.append(PadragA)
-            PowerB.append(PadragB)
-        else:
-            PowerA.append(0)
-            PowerB.append(0)
+        
+        PowerA.append(PadragA)
+        PowerB.append(PadragA)
+       
             
         
         Tva.append(Tva[-1] + abs(PowerA[-1] - PowerA[-2]))
