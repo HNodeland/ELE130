@@ -354,136 +354,38 @@ def main():
 #   - seksjonene H) og 12) for offline bruk
 
 def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, FiltrertFart, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi):
-
+    #Initialverdier
     if len(Tid) == 1:
         FiltrertAvstand.append(UfiltrertAvstand[-1])
 
     elif len(Tid) == 2:
-        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
+        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi)
 
-        derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
-        derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
+        derivasjon(Tid, UfiltrertAvstand, RawFart)
+        derivasjon(Tid, FiltrertAvstand, Fart) 
         FiltrertFart.append(Fart[-1])
 
     elif len(Tid) == 3:
-        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
+        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) 
 
-        derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
-        derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
-        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
+        derivasjon(Tid, UfiltrertAvstand, RawFart) 
+        derivasjon(Tid, FiltrertAvstand, Fart)
+        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi)
 
-        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
+        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon)
         FiltrertAkselerasjon.append(UfiltrertAkselerasjon[-1])
 
+    #Beregninger
     else:
-        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
+        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi)
 
-        derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
-        derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
-        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
+        derivasjon(Tid, UfiltrertAvstand, RawFart) 
+        derivasjon(Tid, FiltrertAvstand, Fart)
+        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) 
 
-        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
-        iir_filtration(Tid, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi) #UfiltrertAkselerasjon
-   
-
-
-        
-# Avstand = rådata
-# Avstand => Filtrering => FiltrertAvstand
-
-# Avstand => derivasjon => Fart
-# FiltrertAvstand = > Derivasjon => iir_Fart
-# iir_Fart => Filtrering => iir2_Fart
-
-# iir2_Fart => Derivasjon => aks
-
-
-
-
-
-
-
-
-
-
-    # Parametre
-
-
-    # Initialverdibereging
-    
-    # if len(Tid) == 1:
-    #     Ts.append(0)
-    #     deltaAvstand.append(0)
-    #     Fart.append(0)
-    #     iir_Fart.append(0)
-    #     iir2_Fart.append(0)
-    #     FiltrertAvstand.append(Avstand[-1])
-        
-    #     UfiltrertAkselerasjon.append(0)
-        
-    # elif len(Tid) == 2:
-    #     Fart.append(0)
-    #     iir_Fart.append(0)
-    #     Ts.append(Tid[-1] - Tid[-2])
-    #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
-    #     FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
-
-        
-        # Ts.append(Tid[-1] - Tid[-2])
-        # deltaAvstand.append(Avstand[-1] - Avstand[-2])
-        # FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
-  
-        # Fart.append(deltaAvstand[-1] / Ts[-1])     
-        # iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
-        # iir2_Fart.append(iir_Fart[-1])
-
-        # UfiltrertAkselerasjon.append(0)
-
-    # elif len(Tid) == 3:
-    #     Ts.append(Tid[-1] - Tid[-2])
-    #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
-        
-    #     FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
-        
-    #     Fart.append(deltaAvstand[-1] / Ts[-1]) 
-    #     iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
-    #     iir2_Fart.append(iir_Fart[-1])
-
-    #     UfiltrertAkselerasjon.append(0)
-
-    #elif len(Tid) == 4:
-        # Ts.append(Tid[-1] - Tid[-2])
-        # deltaAvstand.append(Avstand[-1] - Avstand[-2])
-        
-        # FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
-        
-        # Fart.append(deltaAvstand[-1] / Ts[-1]) 
-        # iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
-        # iir2_Fart.append(Alfa_verdi*iir_Fart[-1])+((1-Alfa_verdi)*iir2_Fart[-1])
-
-        # UfiltrertAkselerasjon.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
-
-    
-    # else:
-    #     Ts.append(Tid[-1] - Tid[-2])
-    #     deltaAvstand.append(Avstand[-1] - Avstand[-2])
-    #     FiltrertAvstand.append((Alfa_verdi*Avstand[-1])+((1-Alfa_verdi)*FiltrertAvstand[-1]))
-        
-    #     Fart.append(deltaAvstand[-1] / Ts[-1])     
-    #     iir_Fart.append((FiltrertAvstand[-1] - FiltrertAvstand[-2])/Ts[-1])
-    #     iir2_Fart.append(Alfa_verdi*iir_Fart[-1])+((1-Alfa_verdi)*iir2_Fart[-1])
-
-    #     UfiltrertAkselerasjon.append((iir2_Fart[-1] - iir2_Fart[-2])/Ts[-3])
-
-        
-
-
-    # Matematiske beregninger 
-
-
-
-    # Pådragsberegning
-    
+        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) 
+        iir_filtration(Tid, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi) 
+       
 
 #---------------------------------------------------------------------
 
