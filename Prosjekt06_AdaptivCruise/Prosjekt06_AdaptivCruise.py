@@ -404,11 +404,11 @@ def MathCalculations(Avstand, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, a
     referanse = Avstand[0]
     MAEsum = 0
   
-    Fart = 30
+    Fart = 0
     
-    K_p = 1.5
-    K_i = 0.5
-    K_d = 0.2
+    K_p = 0.7
+    K_i = 0.5 
+    K_d = 0
 
 
 
@@ -451,11 +451,11 @@ def MathCalculations(Avstand, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, a
         iir_filtration(Tid, Avvik, Filtrert_Avvik, Alfa_Verdi)
         derivasjon(Tid, Filtrert_Avvik, Filtrert_Avvik_Derivert)
 
-        if Integrert_Avvik[-1] > 0.5:
-            Integrert_Avvik[-1] = 0.5
+        if Integrert_Avvik[-1] > 50:
+            Integrert_Avvik[-1] = 50
 
-        elif Integrert_Avvik[-1] < -0.5:
-            Integrert_Avvik[-1] = -0.5
+        elif Integrert_Avvik[-1] < -50:
+            Integrert_Avvik[-1] = -50
 
         PadragA = Fart - K_p*Avvik[-1] - K_i*Integrert_Avvik[-1] - K_d*Filtrert_Avvik_Derivert[-1]
         #PadragB = Fart + K_p*Avvik[-1] + K_i*Integrert_Avvik[-1] + K_d*Filtrert_Avvik_Derivert[-1]

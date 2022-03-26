@@ -30,7 +30,7 @@ EV3_IP = "169.254.200.246"
 # Bruk 'Upload'-funksjonen
 
 # --> Filnavn for lagrede MÅLINGER som skal lastes inn offline
-filenameMeas = "measurements/P06_meas_01.txt"
+filenameMeas = "measurements/P06_meas_03.txt"
 
 # --> Filnavn for lagring av BEREGNEDE VARIABLE som gjøres offline
 #     Typisk navn:  "CalcOffline_P0X_BeskrivendeTekst_Y.txt"
@@ -323,17 +323,19 @@ def offline(filenameMeas, filenameCalcOffline):
             with open(filenameCalcOffline, "w") as f:
                 CalculatedToFileHeader = "Tallformatet viser til kolonnenummer:\n"
                 CalculatedToFileHeader += "0=PowerA, "
-                CalculatedToFileHeader += "1=PowerB \n"
+                CalculatedToFileHeader += "1=PowerB, "
+                CalculatedToFileHeader += "2=Integrert_Avvik \n"
                 f.write(CalculatedToFileHeader)
 
                 # Lengde av de MÅLTE listene.
-                # Husk at siste element i strengen må være '\n'            
+                # Husk at siste element i strengen må være '\n'
                 for i in range(0,len(Tid)):
                     CalculatedToFile = ""
-      
+
                     CalculatedToFile += str(PowerA[i]) + ","
-                    CalculatedToFile += str(PowerB[i]) + "\n"
-                    
+                    CalculatedToFile += str(PowerB[i]) + ","
+                    CalculatedToFile += str(Integrert_Avvik[i]) + "\n"
+
                     f.write(CalculatedToFile)
         #---------------------------------------------------------
 
