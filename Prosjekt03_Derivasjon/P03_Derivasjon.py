@@ -357,34 +357,33 @@ def MathCalculations(Tid, UfiltrertAvstand, FiltrertAvstand, RawFart, Fart, Filt
 
     if len(Tid) == 1:
         FiltrertAvstand.append(UfiltrertAvstand[-1])
-        
-        RawFart.append(0)
-        Fart.append(0)
-        FiltrertFart.append(0)
 
-        UfiltrertAkselerasjon.append(0)
-        FiltrertAkselerasjon.append(0)
-    
     elif len(Tid) == 2:
         iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
-        
+
         derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
         derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
         FiltrertFart.append(Fart[-1])
 
-        UfiltrertAkselerasjon.append(0)
-        FiltrertAkselerasjon.append(0)
-    
-    else:
+    elif len(Tid) == 3:
         iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
-        
+
         derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
         derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
         iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
-        
+
+        derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
+        FiltrertAkselerasjon.append(UfiltrertAkselerasjon[-1])
+
+    else:
+        iir_filtration(Tid, UfiltrertAvstand, FiltrertAvstand, AlfaVerdi) #FiltrertAvstand
+
+        derivasjon(Tid, UfiltrertAvstand, RawFart) #Fart, rådata
+        derivasjon(Tid, FiltrertAvstand, Fart) #iir_Fart
+        iir_filtration(Tid, Fart, FiltrertFart, AlfaVerdi) #iir2_Fart
+
         derivasjon(Tid, FiltrertFart, UfiltrertAkselerasjon) #UfiltrertAkselerasjon
         iir_filtration(Tid, UfiltrertAkselerasjon, FiltrertAkselerasjon, AlfaVerdi) #UfiltrertAkselerasjon
-
    
 
 
