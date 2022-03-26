@@ -422,6 +422,7 @@ def MathCalculations(Lys, Tid, Ts, PowerA, PowerB, Avvik, Integrert_Avvik, abs_A
         MAEliste.append(0)     
         Tva.append(0)
         Tvb.append(0)
+        
         Integrert_Avvik.append(0)
         Filtrert_Avvik.append(Avvik[0])
         Filtrert_Avvik_Derivert.append(0)
