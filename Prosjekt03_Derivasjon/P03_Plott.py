@@ -203,20 +203,20 @@ fig, ax = plt.subplots(nrows=3, ncols=1, sharex=True)
 # Repeter om nødvendig noen delfigurer for å fylle ut.
 def figureTitles():
     global ax
-  
+
     ax[0].set_title('Avstand')
     #ax[0].set_title('FiltrertAvstand')
     #ax[2].set_title('RawFart')
     ax[1].set_title('Fart')
     #ax[1].set_title('FiltrertFart')
-    ax[2].set_title('Akselerasjon')
-   
-    
+    #ax[2].set_title('Akselerasjon')
+
+
 
     # Vær obs på at ALLE delfigurene må inneholde data. 
 
-    ax[2].set_xlabel('Tid [sec]')
-  
+    ax[1].set_xlabel('Tid [sec]')
+
 
 
 # Vær obs på at ALLE delfigurene må inneholde data. 
@@ -225,11 +225,11 @@ def plotData():
 
     #ax[0].plot(Tid[0:], UfiltrertAvstand[0:], 'b')
     ax[0].plot(Tid[0:], FiltrertAvstand[0:], 'r')
-    #ax[2].plot(Tid[0:], RawFart[0:], 'b')
-    ax[1].plot(Tid[0:], Fart[0:], 'b')
-    #ax[1].plot(Tid[0:], FiltrertFart[0:], 'r')
-    ax[2].plot(Tid[0:], UfiltrertAkselerasjon[0:], 'g')
-    #ax[2].plot(Tid[0:], FiltrertAkselerasjon[0:], 'r')
+    #ax[1].plot(Tid[1:], RawFart[0:], 'b')
+    ax[1].plot(Tid[1:], Fart[0:], 'b')
+    #ax[1].plot(Tid[1:], FiltrertFart[0:], 'r')
+    #ax[2].plot(Tid[2:], UfiltrertAkselerasjon[0:], 'g')
+    #ax[2].plot(Tid[1:], FiltrertAkselerasjon[0:], 'r')
  
     
    
